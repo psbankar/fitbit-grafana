@@ -37,15 +37,18 @@ jobs:
           GHCR_OWNER=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
           GHCR_IMAGE="ghcr.io/${GHCR_OWNER}/fitbit-fetch-data"
           RELEASE_TAG="${{ github.event.release.tag_name }}"
+          if [ -z "${RELEASE_TAG}" ]; then
+            RELEASE_TAG=$(git describe --tags --exact-match 2>/dev/null || git describe --tags --abbrev=0 2>/dev/null || echo "${{ github.ref_name }}")
+          fi
 
           {
             echo "ghcr_image=${GHCR_IMAGE}"
             echo "tags<<EOF"
-            if [ -n "${RELEASE_TAG}" ]; then
+            if [ -n "${RELEASE_TAG}" ] && [ "${RELEASE_TAG}" != "main" ]; then
               echo "${GHCR_IMAGE}:${RELEASE_TAG}"
               echo "${GHCR_IMAGE}:latest"
             else
-              echo "${GHCR_IMAGE}:v2.1.0"
+              echo "${GHCR_IMAGE}:v2.2.0"
               echo "${GHCR_IMAGE}:latest"
             fi
             echo "EOF"
