@@ -1428,12 +1428,13 @@ def get_daily_data_limit_365d(start_date_str, end_date_str):
         else:
             logging.warning("No HR Zone records found for date %s to %s in Google mode", start_date_str, end_date_str)
  
-        # --- Activity Minutes via dailyRollUp (steps, total-calories, distance) ---
+        # --- Activity Minutes via dailyRollUp (steps, total-calories, floors) ---
         # These use the dailyRollUp POST endpoint for aggregated daily totals
         rollup_map = [
             # (data_type,        measurement_name,  field_name,   cast_fn)
             ("steps",            "Total Steps",      "value",      float),
             ("total-calories",   "calories",         "value",      float),
+            ("floors",           "Floors",           "value",      float),
         ]
         
         for data_type, measurement_name, field_name, cast_fn in rollup_map:
@@ -1466,6 +1467,8 @@ def get_daily_data_limit_365d(start_date_str, end_date_str):
                         value = extract_first_numeric(rp.get("steps", {}).get("countSum"))
                     elif data_type == "total-calories":
                         value = extract_first_numeric(rp.get("totalCalories", {}).get("kcalSum"))
+                    elif data_type == "floors":
+                        value = extract_first_numeric(rp.get("floors", {}).get("countSum"))
                     if value is None:
                         continue
                     # Timestamp: use civilStartTime from rollup point
