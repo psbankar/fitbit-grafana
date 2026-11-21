@@ -1218,14 +1218,26 @@ def get_daily_data_limit_30d(start_date_str, end_date_str):
         inserted_count = 0
         for data_point, ts in points:
             cbt_fields = data_point.get("coreBodyTemperature", {})
-            temp = extract_first_numeric(cbt_fields.get("temperatureDegreesCelsius")) or extract_first_numeric(cbt_fields)
+            temp = (
+                extract_first_numeric(cbt_fields.get("temperatureCelsius"))
+                or extract_first_numeric(cbt_fields.get("temperatureDegreesCelsius"))
+                or extract_first_numeric(cbt_fields)
+            )
             if temp is None:
                 continue
+            device_info = data_point.get("dataSource", {}).get("device", {})
+            dev_name = device_info.get("displayName") or DEVICENAME
+            temp_c = round(float(temp), 2)
+            temp_f = round(temp_c * 9 / 5 + 32, 2)
             collected_records.append({
                 "measurement": "CoreBodyTemperature",
                 "time": ts,
-                "tags": {"Device": DEVICENAME},
-                "fields": {"value": float(temp)}
+                "tags": {"Device": dev_name},
+                "fields": {
+                    "value": temp_c,
+                    "value_c": temp_c,
+                    "value_f": temp_f
+                }
             })
             inserted_count += 1
         if inserted_count:
@@ -1304,20 +1316,28 @@ def get_daily_data_limit_30d(start_date_str, end_date_str):
         if inserted_count:
             logging.info("Recorded Symptoms for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
 
-        # --- ECG (ecg) ---
+        # --- ECG (electrocardiogram) ---
         try:
-            points = get_google_datapoints_for_date_range("ecg", start_date_str, end_date_str)
+            points = get_google_datapoints_for_date_range("electrocardiogram", start_date_str, end_date_str)
         except requests.exceptions.HTTPError as e:
             logging.debug("Google ECG fetch failed: %s", str(e))
             points = []
         inserted_count = 0
         for data_point, ts in points:
-            ecg_fields = data_point.get("ecg", {})
-            hr = extract_first_numeric(ecg_fields.get("averageHeartRateBeatsPerMinute")) or extract_first_numeric(ecg_fields)
+            ecg_fields = data_point.get("electrocardiogram", {}) or data_point.get("ecg", {})
+            hr = (
+                extract_first_numeric(ecg_fields.get("beatsPerMinuteAvg"))
+                or extract_first_numeric(ecg_fields.get("averageHeartRateBeatsPerMinute"))
+                or extract_first_numeric(ecg_fields)
+            )
             fields = {"logged": 1.0}
             if hr is not None:
                 fields["average_heart_rate"] = float(hr)
-            classification = ecg_fields.get("rhythmClassification") or ecg_fields.get("classification")
+            classification = (
+                ecg_fields.get("resultClassification")
+                or ecg_fields.get("rhythmClassification")
+                or ecg_fields.get("classification")
+            )
             tags = {"Device": DEVICENAME}
             if classification:
                 tags["classification"] = str(classification)
