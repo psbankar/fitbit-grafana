@@ -419,7 +419,7 @@ def request_data_from_fitbit(url, headers=None, params=None, data=None, request_
                 raise Exception("Invalid request type " + str(request_type))
         
             if response.status_code == 200: # Success
-                if url.endswith(".tcx"): # TCX XML file for GPS data
+                if url.endswith(".tcx") or ":exportExerciseTcx" in url: # TCX XML file for GPS data
                     return response
                 else:
                     return response.json()
@@ -1050,6 +1050,98 @@ def get_daily_data_limit_30d(start_date_str, end_date_str):
             logging.info("Recorded weight and BMI for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
         else:
             logging.warning("No Weight/BMI records found for date %s to %s in Google mode", start_date_str, end_date_str)
+
+        # --- Body Fat (body-fat) ---
+        try:
+            points = get_google_datapoints_for_date_range("body-fat", start_date_str, end_date_str)
+        except requests.exceptions.HTTPError as e:
+            logging.debug("Google Body Fat fetch failed: %s", str(e))
+            points = []
+        inserted_count = 0
+        for data_point, ts in points:
+            bf_fields = data_point.get("bodyFat", {})
+            percentage = extract_first_numeric(bf_fields.get("percentage")) or extract_first_numeric(bf_fields)
+            if percentage is None:
+                continue
+            collected_records.append({
+                "measurement": "body_fat",
+                "time": ts,
+                "tags": {"Device": DEVICENAME},
+                "fields": {"percentage": float(percentage)}
+            })
+            inserted_count += 1
+        if inserted_count:
+            logging.info("Recorded Body Fat for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
+
+        # --- Cardio Fitness / VO2 Max (daily-vo2-max) ---
+        try:
+            points = get_google_datapoints_for_date_range("daily-vo2-max", start_date_str, end_date_str)
+        except requests.exceptions.HTTPError as e:
+            logging.debug("Google VO2 Max fetch failed: %s", str(e))
+            points = []
+        inserted_count = 0
+        for data_point, ts in points:
+            vo2_fields = data_point.get("dailyVo2Max", {})
+            vo2_val = extract_first_numeric(vo2_fields.get("vo2MaxMillilitersPerMinutePerKilogram")) or extract_first_numeric(vo2_fields)
+            if vo2_val is None:
+                continue
+            collected_records.append({
+                "measurement": "VO2Max",
+                "time": ts,
+                "tags": {"Device": DEVICENAME},
+                "fields": {"value": float(vo2_val)}
+            })
+            inserted_count += 1
+        if inserted_count:
+            logging.info("Recorded VO2 Max for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
+
+        # --- Hydration (hydration-log) ---
+        try:
+            points = get_google_datapoints_for_date_range("hydration-log", start_date_str, end_date_str)
+        except requests.exceptions.HTTPError as e:
+            logging.debug("Google Hydration fetch failed: %s", str(e))
+            points = []
+        inserted_count = 0
+        for data_point, ts in points:
+            hydro_fields = data_point.get("hydrationLog", {})
+            ml = extract_first_numeric(hydro_fields.get("volumeMilliliters")) or extract_first_numeric(hydro_fields)
+            if ml is None:
+                continue
+            collected_records.append({
+                "measurement": "water",
+                "time": ts,
+                "tags": {"Device": DEVICENAME},
+                "fields": {"value": float(ml)}
+            })
+            inserted_count += 1
+        if inserted_count:
+            logging.info("Recorded Hydration for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
+
+        # --- Nutrition (nutrition-log) ---
+        try:
+            points = get_google_datapoints_for_date_range("nutrition-log", start_date_str, end_date_str)
+        except requests.exceptions.HTTPError as e:
+            logging.debug("Google Nutrition fetch failed: %s", str(e))
+            points = []
+        inserted_count = 0
+        for data_point, ts in points:
+            nutri_fields = data_point.get("nutritionLog", {})
+            nutri_data = {}
+            for k in ["caloriesKcal", "proteinGrams", "carbohydratesGrams", "fatGrams", "fiberGrams", "sodiumMilligrams"]:
+                v = extract_first_numeric(nutri_fields.get(k))
+                if v is not None:
+                    nutri_data[k] = float(v)
+            if not nutri_data:
+                continue
+            collected_records.append({
+                "measurement": "nutrition",
+                "time": ts,
+                "tags": {"Device": DEVICENAME},
+                "fields": nutri_data
+            })
+            inserted_count += 1
+        if inserted_count:
+            logging.info("Recorded Nutrition for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
  
         return  # ← Google path done, skip Fitbit code below
  
@@ -1849,6 +1941,7 @@ def fetch_latest_activities(end_date_str):
                 fields["distance"] = float(distance_value)
 
             extracted_activity_name = exercise_payload.get("displayName") or exercise_payload.get("exerciseType") or "Unknown-Activity"
+            ActivityID = ts + "-" + extracted_activity_name
             collected_records.append({
                 "measurement": "Activity Records",
                 "time": ts,
@@ -1857,6 +1950,15 @@ def fetch_latest_activities(end_date_str):
                 },
                 "fields": fields
             })
+            # Export TCX GPS track if available
+            dp_name = data_point.get("name")
+            if dp_name:
+                tcx_url = get_google_health_api_url(f"{dp_name}:exportExerciseTcx")
+                try:
+                    get_tcx_data(tcx_url, ActivityID)
+                    logging.info("Recorded Google TCX GPS data for %s", ActivityID)
+                except Exception as tcx_err:
+                    logging.debug("TCX GPS export not available for %s: %s", ActivityID, str(tcx_err))
             inserted_count += 1
         logging.info("Fetched recent exercises (Google mode): %s points", inserted_count)
         return
