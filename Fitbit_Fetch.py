@@ -511,15 +511,16 @@ GOOGLE_HEALTH_DATA_SCOPES = (
     "https://www.googleapis.com/auth/googlehealth.mindfulness.readonly"
 )
 
-def refresh_google_tokens(client_id, client_secret, refresh_token, scope=GOOGLE_HEALTH_DATA_SCOPES):
+def refresh_google_tokens(client_id, client_secret, refresh_token, scope=None):
     logging.info("Attempting to refresh Google Health API tokens...")
     data = {
         "client_id": client_id,
         "client_secret": client_secret,
         "grant_type": "refresh_token",
-        "refresh_token": refresh_token,
-        "scope": scope
+        "refresh_token": refresh_token
     }
+    if scope:
+        data["scope"] = scope
     response = requests.post(GOOGLE_OAUTH_TOKEN_URL, data=data)
     if response.status_code != 200:
         logging.error("Google token refresh failed. Status code: %s details: %s", response.status_code, response.text)
