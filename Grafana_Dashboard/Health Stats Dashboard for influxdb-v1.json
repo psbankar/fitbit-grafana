@@ -135,7 +135,11 @@
       "id": 54,
       "panels": [],
       "title": "Recent Data",
-      "type": "row"
+      "type": "row",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      }
     },
     {
       "datasource": {
@@ -1926,7 +1930,11 @@
       "id": 52,
       "panels": [],
       "title": "Sleep Data - Long Term",
-      "type": "row"
+      "type": "row",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      }
     },
     {
       "datasource": {
@@ -2976,7 +2984,11 @@
       "id": 56,
       "panels": [],
       "title": "Other Long Term Data",
-      "type": "row"
+      "type": "row",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      }
     },
     {
       "datasource": {
@@ -7055,7 +7067,11 @@
         "y": 166
       },
       "collapsed": false,
-      "panels": []
+      "panels": [],
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      }
     },
     {
       "id": 85,
@@ -7102,7 +7118,7 @@
             "type": "influxdb",
             "uid": "${DS_HEALTH_STATS}"
           },
-          "query": "SELECT sum(\"value\") as \"Water\" FROM \"water\" WHERE $timeFilter GROUP BY time(1d) fill(null)",
+          "query": "SELECT sum(\"volume_ml\") as \"Water (mL)\", sum(\"volume_oz\") as \"Water (fl oz)\" FROM \"water\" WHERE $timeFilter GROUP BY time(1d) fill(null)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -7164,7 +7180,7 @@
             "type": "influxdb",
             "uid": "${DS_HEALTH_STATS}"
           },
-          "query": "SELECT mean(\"caloriesKcal\") as \"Calories (kcal)\", mean(\"proteinGrams\") as \"Protein (g)\", mean(\"carbohydratesGrams\") as \"Carbs (g)\", mean(\"fatGrams\") as \"Fat (g)\" FROM \"nutrition\" WHERE $timeFilter GROUP BY time(1d) fill(none)",
+          "query": "SELECT sum(\"calories\") as \"Calories (kcal)\", sum(\"protein\") as \"Protein (g)\", sum(\"carbs\") as \"Carbs (g)\", sum(\"fat\") as \"Fat (g)\", sum(\"fiber\") as \"Fiber (g)\" FROM \"nutrition\" WHERE $timeFilter GROUP BY time(1d) fill(none)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -7340,10 +7356,149 @@
             "type": "influxdb",
             "uid": "${DS_HEALTH_STATS}"
           },
-          "query": "SELECT \"average_heart_rate\", \"classification\" FROM \"ECG\" WHERE $timeFilter",
+          "query": "SELECT \"average_heart_rate\" as \"Heart Rate (bpm)\", \"classification\" as \"Classification\", \"sampling_frequency_hz\" as \"Sampling Rate (Hz)\" FROM \"ECG\" WHERE $timeFilter",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
+        }
+      ]
+    },
+    {
+      "id": 90,
+      "title": "Core Body Temperature (Pixel Thermometer)",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 183
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "pointSize": 7,
+            "showPoints": "always",
+            "spanNulls": true
+          },
+          "unit": "celsius"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Temp (\u00b0F)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "fahrenheit"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "query": "SELECT mean(\"value_c\") as \"Temp (\u00b0C)\", mean(\"value_f\") as \"Temp (\u00b0F)\" FROM \"CoreBodyTemperature\" WHERE $timeFilter GROUP BY time($__interval) fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 91,
+      "title": "Swim Activity & Lengths",
+      "type": "barchart",
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 8,
+        "y": 183
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Duration (min)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "m"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "stacking": "normal",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "query": "SELECT sum(\"lengths\") as \"Lengths\", sum(\"stroke_count\") as \"Total Strokes\", sum(\"duration_seconds\") / 60 as \"Duration (min)\" FROM \"SwimLengths\" WHERE $timeFilter GROUP BY time(1d) fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
         }
       ]
     }
@@ -7417,7 +7572,11 @@
         "refresh": 1,
         "regex": "",
         "sort": 4,
-        "type": "query"
+        "type": "query",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "${DS_HEALTH_STATS}"
+        }
       }
     ]
   },
