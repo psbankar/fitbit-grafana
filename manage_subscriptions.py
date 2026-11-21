@@ -17,7 +17,7 @@ import Fitbit_Fetch as ff
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - [%(levelname)s] %(message)s")
 
-DEFAULT_SUBSCRIBER_ID = "boreas-fitbit-subscriber"
+DEFAULT_SUBSCRIBER_ID = "boreasfitbitsubscriber"
 DEFAULT_PUBLIC_URL = os.environ.get("WEBHOOK_PUBLIC_URL", "https://health.772723.xyz/webhook")
 
 
@@ -32,7 +32,20 @@ def get_project_id():
     return project_id or "693456048191"
 
 
-def get_auth_headers():
+def get_cloud_auth_headers():
+    active_client_id, active_client_secret = ff.get_active_credentials(ff.client_id, ff.client_secret)
+    _, refresh_token, _ = ff.load_tokens_from_file()
+    cloud_access_token, _ = ff.refresh_google_tokens(
+        active_client_id, active_client_secret, refresh_token, scope="https://www.googleapis.com/auth/cloud-platform"
+    )
+    return {
+        "Authorization": f"Bearer {cloud_access_token}",
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+
+
+def get_health_auth_headers():
     ff.Get_New_Access_Token(ff.client_id, ff.client_secret)
     return {
         "Authorization": f"Bearer {ff.ACCESS_TOKEN}",
@@ -43,32 +56,39 @@ def get_auth_headers():
 
 def register_subscriber(subscriber_id, endpoint_url, webhook_secret):
     project_id = get_project_id()
-    headers = get_auth_headers()
+    cloud_headers = get_cloud_auth_headers()
+    subscriber_id = subscriber_id.replace("-", "").lower()
 
     url = f"{ff.GOOGLE_HEALTH_BASE_URL}/{ff.GOOGLE_HEALTH_API_VERSION}/projects/{project_id}/subscribers?subscriberId={subscriber_id}"
     payload = {
         "endpointUri": endpoint_url,
+        "subscriberConfigs": [
+            {
+                "subscriptionCreatePolicy": "AUTOMATIC"
+            }
+        ],
         "endpointAuthorization": {
             "secret": f"Bearer {webhook_secret}"
         }
     }
 
     logging.info("Registering subscriber '%s' with endpoint: %s", subscriber_id, endpoint_url)
-    resp = requests.post(url, headers=headers, json=payload)
+    resp = requests.post(url, headers=cloud_headers, json=payload)
     if resp.status_code in [200, 201]:
         logging.info("Successfully registered subscriber '%s': %s", subscriber_id, resp.json())
     elif resp.status_code == 409:
         logging.info("Subscriber '%s' already exists; updating configuration...", subscriber_id)
         update_url = f"{ff.GOOGLE_HEALTH_BASE_URL}/{ff.GOOGLE_HEALTH_API_VERSION}/projects/{project_id}/subscribers/{subscriber_id}"
-        patch_resp = requests.patch(update_url, headers=headers, json=payload)
+        patch_resp = requests.patch(update_url, headers=cloud_headers, json=payload)
         logging.info("Update result (%d): %s", patch_resp.status_code, patch_resp.text)
     else:
         logging.error("Failed to register subscriber (%d): %s", resp.status_code, resp.text)
         return False
 
     # Bind user subscriptions to subscriber
+    health_headers = get_health_auth_headers()
     sub_url = f"{ff.GOOGLE_HEALTH_BASE_URL}/{ff.GOOGLE_HEALTH_API_VERSION}/projects/{project_id}/subscribers/{subscriber_id}/subscriptions"
-    sub_resp = requests.post(sub_url, headers=headers, json={"user": "users/me"})
+    sub_resp = requests.post(sub_url, headers=health_headers, json={"user": "users/me"})
     if sub_resp.status_code in [200, 201]:
         logging.info("Successfully bound user subscription to subscriber '%s'", subscriber_id)
     else:
@@ -78,10 +98,10 @@ def register_subscriber(subscriber_id, endpoint_url, webhook_secret):
 
 def list_subscribers():
     project_id = get_project_id()
-    headers = get_auth_headers()
+    cloud_headers = get_cloud_auth_headers()
 
     url = f"{ff.GOOGLE_HEALTH_BASE_URL}/{ff.GOOGLE_HEALTH_API_VERSION}/projects/{project_id}/subscribers"
-    resp = requests.get(url, headers=headers)
+    resp = requests.get(url, headers=cloud_headers)
     if resp.status_code == 200:
         data = resp.json()
         logging.info("Active Subscribers for project %s:\n%s", project_id, json.dumps(data, indent=2))
@@ -91,10 +111,11 @@ def list_subscribers():
 
 def delete_subscriber(subscriber_id):
     project_id = get_project_id()
-    headers = get_auth_headers()
+    cloud_headers = get_cloud_auth_headers()
+    subscriber_id = subscriber_id.replace("-", "").lower()
 
     url = f"{ff.GOOGLE_HEALTH_BASE_URL}/{ff.GOOGLE_HEALTH_API_VERSION}/projects/{project_id}/subscribers/{subscriber_id}"
-    resp = requests.delete(url, headers=headers)
+    resp = requests.delete(url, headers=cloud_headers)
     if resp.status_code in [200, 204]:
         logging.info("Successfully deleted subscriber '%s'", subscriber_id)
     else:

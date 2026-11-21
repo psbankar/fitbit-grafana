@@ -499,13 +499,23 @@ def refresh_fitbit_tokens(client_id, client_secret, refresh_token):
     return access_token, new_refresh_token
 
 
-def refresh_google_tokens(client_id, client_secret, refresh_token):
+GOOGLE_HEALTH_DATA_SCOPES = (
+    "https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly "
+    "https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly "
+    "https://www.googleapis.com/auth/googlehealth.sleep.readonly "
+    "https://www.googleapis.com/auth/googlehealth.location.readonly "
+    "https://www.googleapis.com/auth/googlehealth.profile.readonly "
+    "https://www.googleapis.com/auth/googlehealth.settings.readonly"
+)
+
+def refresh_google_tokens(client_id, client_secret, refresh_token, scope=GOOGLE_HEALTH_DATA_SCOPES):
     logging.info("Attempting to refresh Google Health API tokens...")
     data = {
         "client_id": client_id,
         "client_secret": client_secret,
         "grant_type": "refresh_token",
-        "refresh_token": refresh_token
+        "refresh_token": refresh_token,
+        "scope": scope
     }
     response = requests.post(GOOGLE_OAUTH_TOKEN_URL, data=data)
     if response.status_code != 200:
@@ -695,10 +705,16 @@ if AUTO_DATE_RANGE:
     end_date_str = end_date.strftime("%Y-%m-%d")
     start_date_str = start_date.strftime("%Y-%m-%d")
 else:
-    start_date_str = MANUAL_START_DATE or input("Enter start date in YYYY-MM-DD format : ")
-    end_date_str = MANUAL_END_DATE or input("Enter end date in YYYY-MM-DD format : ")
-    start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
-    end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+    start_date_str = MANUAL_START_DATE or ""
+    end_date_str = MANUAL_END_DATE or ""
+    if start_date_str and end_date_str:
+        start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+        end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+    else:
+        end_date = datetime.now(LOCAL_TIMEZONE)
+        start_date = end_date - timedelta(days=auto_update_date_range)
+        end_date_str = end_date.strftime("%Y-%m-%d")
+        start_date_str = start_date.strftime("%Y-%m-%d")
 
 # %% [markdown]
 # ## Setting up functions for Requesting data from server
@@ -1838,12 +1854,16 @@ def get_tcx_data(tcx_url, ActivityID):
         "Authorization": f"Bearer {ACCESS_TOKEN}",
         "Accept": "application/x-www-form-urlencoded"
     }
-    tcx_params = {
-            'includePartialTCX': 'false'
-        }
-    response = request_data_from_fitbit(tcx_url, headers=tcx_headers, params=tcx_params)
-    if response.status_code != 200:
-        logging.error(f"Error fetching TCX file: {response.status_code}, {response.text}")
+    tcx_params = {} if HEALTH_API_PROVIDER == "google" else {'includePartialTCX': 'false'}
+    try:
+        response = request_data_from_fitbit(tcx_url, headers=tcx_headers, params=tcx_params, suppress_http_error_log=(HEALTH_API_PROVIDER == "google"))
+    except Exception as e:
+        logging.debug("Could not fetch TCX GPS for %s: %s", ActivityID, str(e))
+        return
+    if response is None or getattr(response, "status_code", None) != 200:
+        if HEALTH_API_PROVIDER != "google":
+            logging.error(f"Error fetching TCX file: {getattr(response, 'status_code', 'None')}")
+        return
     else:
         root = ET.fromstring(response.text)
         namespace = {"ns": "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2"}
@@ -2014,81 +2034,79 @@ def fetch_latest_activities(end_date_str):
 # ## Call the functions one time as a startup update OR do switch to bulk update mode
 
 # %%
-if AUTO_DATE_RANGE:
-    date_list = [(start_date + timedelta(days=i)).strftime("%Y-%m-%d") for i in range((end_date - start_date).days + 1)]
-    if len(date_list) > 3:
-        logging.warn("Auto schedule update is not meant for more than 3 days at a time, please consider lowering the auto_update_date_range variable to aviod rate limit hit!")
-    for date_str in date_list:
-        get_intraday_data_limit_1d(date_str, [('heart','HeartRate_Intraday','1sec'),('steps','Steps_Intraday','1min')]) # 2 queries x number of dates ( default 2)
-    get_daily_data_limit_30d(start_date_str, end_date_str) # 3 queries
-    get_daily_data_limit_100d(start_date_str, end_date_str) # 1 query
-    get_daily_data_limit_365d(start_date_str, end_date_str) # 8 queries
-    get_daily_data_limit_none(start_date_str, end_date_str) # 1 query
-    get_battery_level() # 1 query
-    fetch_latest_activities(end_date_str) # 1 query
-    write_points_to_influxdb(collected_records)
-    collected_records = []
-else:
-    # Do Bulk update----------------------------------------------------------------------------------------------------------------------------
-
-    schedule.every(1).hours.do(lambda : Get_New_Access_Token(client_id,client_secret)) # Auto-refresh tokens every 1 hour
-    
-    date_list = [(start_date + timedelta(days=i)).strftime("%Y-%m-%d") for i in range((end_date - start_date).days + 1)]
-
-    def yield_dates_with_gap(date_list, gap):
-        start_index = -1*gap
-        while start_index < len(date_list)-1:
-            start_index  = start_index + gap
-            end_index = start_index+gap
-            if end_index > len(date_list) - 1:
-                end_index = len(date_list) - 1
-            if start_index > len(date_list) - 1:
-                break
-            yield (date_list[start_index],date_list[end_index])
-
-    def do_bulk_update(funcname, start_date, end_date):
-        global collected_records
-        funcname(start_date, end_date)
-        schedule.run_pending()
+def start_poller():
+    global collected_records, end_date, start_date, end_date_str, start_date_str
+    if AUTO_DATE_RANGE:
+        date_list = [(start_date + timedelta(days=i)).strftime("%Y-%m-%d") for i in range((end_date - start_date).days + 1)]
+        if len(date_list) > 3:
+            logging.warn("Auto schedule update is not meant for more than 3 days at a time, please consider lowering the auto_update_date_range variable to aviod rate limit hit!")
+        for date_str in date_list:
+            get_intraday_data_limit_1d(date_str, [('heart','HeartRate_Intraday','1sec'),('steps','Steps_Intraday','1min')])
+        get_daily_data_limit_30d(start_date_str, end_date_str)
+        get_daily_data_limit_100d(start_date_str, end_date_str)
+        get_daily_data_limit_365d(start_date_str, end_date_str)
+        get_daily_data_limit_none(start_date_str, end_date_str)
+        get_battery_level()
+        fetch_latest_activities(end_date_str)
         write_points_to_influxdb(collected_records)
         collected_records = []
+    else:
+        # Do Bulk update----------------------------------------------------------------------------------------------------------------------------
+        schedule.every(1).hours.do(lambda : Get_New_Access_Token(client_id,client_secret))
+        
+        date_list = [(start_date + timedelta(days=i)).strftime("%Y-%m-%d") for i in range((end_date - start_date).days + 1)]
 
-    fetch_latest_activities(date_list[-1])
-    write_points_to_influxdb(collected_records)
-    do_bulk_update(get_daily_data_limit_none, date_list[0], date_list[-1])
-    for date_range in yield_dates_with_gap(date_list, 360):
-        do_bulk_update(get_daily_data_limit_365d, date_range[0], date_range[1])
-    for date_range in yield_dates_with_gap(date_list, 98):
-        do_bulk_update(get_daily_data_limit_100d, date_range[0], date_range[1])
-    for date_range in yield_dates_with_gap(date_list, 28):
-        do_bulk_update(get_daily_data_limit_30d, date_range[0], date_range[1])
-    for single_day in date_list:
-        do_bulk_update(get_intraday_data_limit_1d, single_day, [('heart','HeartRate_Intraday','1sec'),('steps','Steps_Intraday','1min')])
+        def yield_dates_with_gap(date_list, gap):
+            start_index = -1*gap
+            while start_index < len(date_list)-1:
+                start_index  = start_index + gap
+                end_index = start_index+gap
+                if end_index > len(date_list) - 1:
+                    end_index = len(date_list) - 1
+                if start_index > len(date_list) - 1:
+                    break
+                yield (date_list[start_index],date_list[end_index])
 
-    logging.info("Success : Bulk update complete for " + start_date_str + " to " + end_date_str)
-    print("Bulk update complete!")
-
-# %% [markdown]
-# ## Schedule functions at specific intervals (Ongoing continuous update)
-
-# %%
-# Ongoing continuous update of data
-if SCHEDULE_AUTO_UPDATE:
-    
-    schedule.every(1).hours.do(lambda : Get_New_Access_Token(client_id,client_secret)) # Auto-refresh tokens every 1 hour
-    schedule.every(3).minutes.do( lambda : get_intraday_data_limit_1d(end_date_str, [('heart','HeartRate_Intraday','1sec'),('steps','Steps_Intraday','1min')] )) # Auto-refresh detailed HR and steps
-    schedule.every(1).hours.do( lambda : get_intraday_data_limit_1d((datetime.strptime(end_date_str, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d"), [('heart','HeartRate_Intraday','1sec'),('steps','Steps_Intraday','1min')] )) # Refilling any missing data on previous day end of night due to fitbit sync delay ( see issue #10 )
-    schedule.every(20).minutes.do(get_battery_level) # Auto-refresh battery level
-    schedule.every(3).hours.do(lambda : get_daily_data_limit_30d(start_date_str, end_date_str))
-    schedule.every(4).hours.do(lambda : get_daily_data_limit_100d(start_date_str, end_date_str))
-    schedule.every(6).hours.do( lambda : get_daily_data_limit_365d(start_date_str, end_date_str))
-    schedule.every(6).hours.do(lambda : get_daily_data_limit_none(start_date_str, end_date_str))
-    schedule.every(1).hours.do( lambda : fetch_latest_activities(end_date_str))
-
-    while True:
-        schedule.run_pending()
-        if len(collected_records) != 0:
+        def do_bulk_update(funcname, start_date, end_date):
+            global collected_records
+            funcname(start_date, end_date)
+            schedule.run_pending()
             write_points_to_influxdb(collected_records)
             collected_records = []
-        time.sleep(30)
-        update_working_dates()
+
+        fetch_latest_activities(date_list[-1])
+        write_points_to_influxdb(collected_records)
+        do_bulk_update(get_daily_data_limit_none, date_list[0], date_list[-1])
+        for date_range in yield_dates_with_gap(date_list, 360):
+            do_bulk_update(get_daily_data_limit_365d, date_range[0], date_range[1])
+        for date_range in yield_dates_with_gap(date_list, 98):
+            do_bulk_update(get_daily_data_limit_100d, date_range[0], date_range[1])
+        for date_range in yield_dates_with_gap(date_list, 28):
+            do_bulk_update(get_daily_data_limit_30d, date_range[0], date_range[1])
+        for single_day in date_list:
+            do_bulk_update(get_intraday_data_limit_1d, single_day, [('heart','HeartRate_Intraday','1sec'),('steps','Steps_Intraday','1min')])
+
+        logging.info("Success : Bulk update complete for " + start_date_str + " to " + end_date_str)
+        print("Bulk update complete!")
+
+    if SCHEDULE_AUTO_UPDATE:
+        schedule.every(1).hours.do(lambda : Get_New_Access_Token(client_id,client_secret))
+        schedule.every(3).minutes.do( lambda : get_intraday_data_limit_1d(end_date_str, [('heart','HeartRate_Intraday','1sec'),('steps','Steps_Intraday','1min')] ))
+        schedule.every(1).hours.do( lambda : get_intraday_data_limit_1d((datetime.strptime(end_date_str, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d"), [('heart','HeartRate_Intraday','1sec'),('steps','Steps_Intraday','1min')] ))
+        schedule.every(20).minutes.do(get_battery_level)
+        schedule.every(3).hours.do(lambda : get_daily_data_limit_30d(start_date_str, end_date_str))
+        schedule.every(4).hours.do(lambda : get_daily_data_limit_100d(start_date_str, end_date_str))
+        schedule.every(6).hours.do( lambda : get_daily_data_limit_365d(start_date_str, end_date_str))
+        schedule.every(6).hours.do(lambda : get_daily_data_limit_none(start_date_str, end_date_str))
+        schedule.every(1).hours.do( lambda : fetch_latest_activities(end_date_str))
+
+        while True:
+            schedule.run_pending()
+            if len(collected_records) != 0:
+                write_points_to_influxdb(collected_records)
+                collected_records = []
+            time.sleep(30)
+            update_working_dates()
+
+if __name__ == "__main__":
+    start_poller()

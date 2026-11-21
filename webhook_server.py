@@ -229,7 +229,8 @@ async def receive_webhook(request: Request, response: Response):
         # Registration test probe or generic ping
         await notification_queue.put({"dataType": "ALL", "received_at": datetime.now(timezone.utc).isoformat()})
 
-    return {"status": "accepted", "timestamp": datetime.now(timezone.utc).isoformat()}
+    # Return 201 Created as required by Google Health API subscriber verification handshake
+    return Response(status_code=201, content=json.dumps({"status": "accepted", "timestamp": datetime.now(timezone.utc).isoformat()}), media_type="application/json")
 
 
 if __name__ == "__main__":
