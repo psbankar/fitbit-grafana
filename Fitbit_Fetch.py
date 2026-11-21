@@ -511,7 +511,7 @@ GOOGLE_HEALTH_DATA_SCOPES = (
     "https://www.googleapis.com/auth/googlehealth.mindfulness.readonly"
 )
 
-def refresh_google_tokens(client_id, client_secret, refresh_token, scope=None):
+def refresh_google_tokens(client_id, client_secret, refresh_token, scope=GOOGLE_HEALTH_DATA_SCOPES):
     logging.info("Attempting to refresh Google Health API tokens...")
     data = {
         "client_id": client_id,
