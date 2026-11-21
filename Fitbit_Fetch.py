@@ -1130,7 +1130,11 @@ def get_daily_data_limit_30d(start_date_str, end_date_str):
                 "measurement": "water",
                 "time": ts,
                 "tags": {"Device": DEVICENAME},
-                "fields": {"value": float(ml)}
+                "fields": {
+                    "value": float(ml),
+                    "volume_ml": float(ml),
+                    "volume_oz": round(float(ml) * 0.033814, 2)
+                }
             })
             inserted_count += 1
         if inserted_count:
@@ -1144,18 +1148,50 @@ def get_daily_data_limit_30d(start_date_str, end_date_str):
             points = []
         inserted_count = 0
         for data_point, ts in points:
-            nutri_fields = data_point.get("nutritionLog", {})
+            nl = data_point.get("nutritionLog", {})
+            interval = nl.get("interval", {})
+            start_time = interval.get("startTime") or nl.get("sampleTime", {}).get("physicalTime") or ts
+            food_name = nl.get("foodDisplayName") or "Food"
+            meal_type = nl.get("mealType") or "UNKNOWN"
+
             nutri_data = {}
+            energy = nl.get("energy", {}).get("kcal")
+            if energy is not None:
+                nutri_data["calories"] = float(energy)
+
+            carbs = nl.get("totalCarbohydrate", {}).get("grams")
+            if carbs is not None:
+                nutri_data["carbs"] = float(carbs)
+
+            fat = nl.get("totalFat", {}).get("grams")
+            if fat is not None:
+                nutri_data["fat"] = float(fat)
+
+            for nutrient_entry in nl.get("nutrients", []):
+                nutr = nutrient_entry.get("nutrient")
+                qty = nutrient_entry.get("quantity", {}).get("grams")
+                if nutr == "PROTEIN" and qty is not None:
+                    nutri_data["protein"] = float(qty)
+                elif nutr == "DIETARY_FIBER" and qty is not None:
+                    nutri_data["fiber"] = float(qty)
+                elif nutr == "SODIUM" and qty is not None:
+                    nutri_data["sodium"] = float(qty)
+
             for k in ["caloriesKcal", "proteinGrams", "carbohydratesGrams", "fatGrams", "fiberGrams", "sodiumMilligrams"]:
-                v = extract_first_numeric(nutri_fields.get(k))
-                if v is not None:
+                v = extract_first_numeric(nl.get(k))
+                if v is not None and k not in nutri_data:
                     nutri_data[k] = float(v)
+
             if not nutri_data:
                 continue
             collected_records.append({
                 "measurement": "nutrition",
-                "time": ts,
-                "tags": {"Device": DEVICENAME},
+                "time": start_time,
+                "tags": {
+                    "Device": DEVICENAME,
+                    "meal_type": meal_type,
+                    "food_name": food_name
+                },
                 "fields": nutri_data
             })
             inserted_count += 1
@@ -1353,6 +1389,48 @@ def get_daily_data_limit_30d(start_date_str, end_date_str):
             inserted_count += 1
         if inserted_count:
             logging.info("Recorded ECG for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
+
+        # --- Swim Lengths (swim-lengths-data) ---
+        try:
+            points = get_google_datapoints_for_date_range("swim-lengths-data", start_date_str, end_date_str)
+        except requests.exceptions.HTTPError as e:
+            logging.debug("Google Swim Lengths fetch failed: %s", str(e))
+            points = []
+        inserted_count = 0
+        for data_point, ts in points:
+            sld = data_point.get("swimLengthsData", {})
+            interval = sld.get("interval", {})
+            start_time = interval.get("startTime") or ts
+            end_time = interval.get("endTime")
+            dev_name = data_point.get("dataSource", {}).get("device", {}).get("displayName") or DEVICENAME
+            stroke_count = int(sld.get("strokeCount") or 0)
+            swim_style = sld.get("swimmingStyle") or "UNKNOWN"
+
+            duration_sec = 0.0
+            if end_time and start_time:
+                try:
+                    t0 = datetime.fromisoformat(start_time.replace("Z", "+00:00"))
+                    t1 = datetime.fromisoformat(end_time.replace("Z", "+00:00"))
+                    duration_sec = max(0.0, (t1 - t0).total_seconds())
+                except Exception:
+                    pass
+
+            collected_records.append({
+                "measurement": "SwimLengths",
+                "time": start_time,
+                "tags": {
+                    "Device": dev_name,
+                    "swimming_style": swim_style
+                },
+                "fields": {
+                    "stroke_count": stroke_count,
+                    "duration_seconds": duration_sec,
+                    "lengths": 1
+                }
+            })
+            inserted_count += 1
+        if inserted_count:
+            logging.info("Recorded Swim Lengths for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
 
         return  # ← Google path done, skip Fitbit code below
  

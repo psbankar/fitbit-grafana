@@ -150,7 +150,7 @@ def process_coalesced_batch(batch: List[Dict[str, Any]]):
         # 4. Daily vitals, clinical metrics, nutrition & wellness logs
         vital_keywords = [
             "HRV", "RESPIRATORY", "TEMPERATURE", "SPO2", "WEIGHT", "BODY_FAT", "VO2",
-            "GLUCOSE", "PRESSURE", "MINDFUL", "MOOD", "SYMPTOM", "ECG", "HYDRATION", "NUTRITION"
+            "GLUCOSE", "PRESSURE", "MINDFUL", "MOOD", "SYMPTOM", "ECG", "HYDRATION", "NUTRITION", "SWIM"
         ]
         if is_all or any(t in dt for dt in data_types_seen for t in vital_keywords):
             ff.get_daily_data_limit_30d(yesterday_str, today_str)
