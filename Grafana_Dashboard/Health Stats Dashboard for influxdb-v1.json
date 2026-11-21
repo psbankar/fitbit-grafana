@@ -138,28 +138,6 @@
       "type": "row"
     },
     {
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 0,
-        "y": 1
-      },
-      "id": 76,
-      "options": {
-        "code": {
-          "language": "plaintext",
-          "showLineNumbers": false,
-          "showMiniMap": false
-        },
-        "content": "<center><a href='https://ko-fi.com/A0A84F3DP' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi2.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a></center>  ",
-        "mode": "html"
-      },
-      "pluginVersion": "11.6.0",
-      "title": "Support Me!",
-      "transparent": true,
-      "type": "text"
-    },
-    {
       "datasource": {
         "type": "influxdb",
         "uid": "${DS_HEALTH_STATS}"
@@ -380,7 +358,7 @@
         "h": 3,
         "w": 3,
         "x": 0,
-        "y": 4
+        "y": 1
       },
       "hideTimeOverride": true,
       "id": 65,
@@ -488,10 +466,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "h": 3,
         "w": 3,
         "x": 0,
-        "y": 7
+        "y": 4
       },
       "hideTimeOverride": true,
       "id": 59,
@@ -1296,7 +1274,7 @@
           "color": {
             "mode": "thresholds"
           },
-          "displayName": "Steps 👟",
+          "displayName": "Steps \ud83d\udc5f",
           "mappings": [],
           "max": 15000,
           "min": 0,
@@ -1427,62 +1405,27 @@
             {
               "options": {
                 "0": {
-                  "color": "#06306f",
-                  "index": 10,
-                  "text": "Deep"
+                  "color": "#ED8936",
+                  "index": 0,
+                  "text": "Awake"
                 },
                 "1": {
-                  "color": "semi-dark-blue",
-                  "index": 9,
+                  "color": "#63B3ED",
+                  "index": 1,
                   "text": "Light"
                 },
                 "2": {
-                  "color": "super-light-blue",
-                  "index": 8,
+                  "color": "#38B2AC",
+                  "index": 2,
                   "text": "REM"
                 },
                 "3": {
-                  "color": "transparent",
-                  "index": 7,
-                  "text": "Awake"
-                },
-                "Awake": {
-                  "color": "transparent",
-                  "index": 5
-                },
-                "Deep": {
-                  "color": "#3274D9",
-                  "index": 4
-                },
-                "Light": {
-                  "color": "light-blue",
-                  "index": 3
-                },
-                "N/A": {
-                  "color": "transparent",
-                  "index": 6
-                },
-                "REM": {
-                  "color": "#C0D8FF",
-                  "index": 2
-                },
-                "null": {
-                  "index": 1,
-                  "text": "N/A"
+                  "color": "#1F3A60",
+                  "index": 3,
+                  "text": "Deep"
                 }
               },
               "type": "value"
-            },
-            {
-              "options": {
-                "from": 0,
-                "result": {
-                  "index": 0,
-                  "text": "N/A"
-                },
-                "to": 0
-              },
-              "type": "range"
             }
           ],
           "thresholds": {
@@ -2946,50 +2889,35 @@
       },
       "id": 42,
       "options": {
-        "from": "0",
-        "legendGradientQuality": "medium",
-        "regions": [
-          {
-            "color": "#ccfbc059",
-            "end": {
-              "hour": 22,
-              "minute": 0
-            },
-            "start": {
-              "hour": 8,
-              "minute": 0
-            }
-          },
-          {
-            "color": "rgba(242, 73, 92, 0.5)",
-            "end": {
-              "hour": 23,
-              "minute": 59
-            },
-            "start": {
-              "hour": 22,
-              "minute": 0
-            }
-          },
-          {
-            "color": "rgba(242, 73, 92, 0.5)",
-            "end": {
-              "hour": 8,
-              "minute": 0
-            },
-            "start": {
-              "hour": 0,
-              "minute": 0
-            }
-          }
-        ],
-        "showCellBorder": false,
-        "showLegend": false,
-        "showTooltip": true,
-        "showValueIndicator": false,
-        "timeFieldName": "Time",
-        "to": "0",
-        "valueFieldName": "Value"
+        "calculate": false,
+        "cellGap": 1,
+        "color": {
+          "exponent": 0.5,
+          "fill": "#b877d9",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Spectral"
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-09
+        },
+        "legend": {
+          "show": true
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "show": true,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "left"
+        }
       },
       "pluginVersion": "2.0.1",
       "targets": [
@@ -3035,7 +2963,7 @@
       ],
       "title": "Sleep Regularity",
       "transparent": true,
-      "type": "marcusolsson-hourly-heatmap-panel"
+      "type": "heatmap"
     },
     {
       "collapsed": false,
@@ -3863,13 +3791,35 @@
       },
       "id": 29,
       "options": {
-        "from": "5",
-        "legendGradientQuality": "low",
-        "showCellBorder": false,
-        "showLegend": true,
-        "showTooltip": true,
-        "showValueIndicator": true,
-        "to": "22"
+        "calculate": false,
+        "cellGap": 1,
+        "color": {
+          "exponent": 0.5,
+          "fill": "#b877d9",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Spectral"
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-09
+        },
+        "legend": {
+          "show": true
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "show": true,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "left"
+        }
       },
       "pluginVersion": "2.0.1",
       "targets": [
@@ -3925,7 +3875,7 @@
         }
       ],
       "transparent": true,
-      "type": "marcusolsson-hourly-heatmap-panel"
+      "type": "heatmap"
     },
     {
       "datasource": {
@@ -6892,6 +6842,510 @@
       "title": "Battery Level",
       "transparent": true,
       "type": "timeseries"
+    },
+    {
+      "id": 81,
+      "title": "Cardio Fitness (VO2 Max)",
+      "type": "stat",
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 0,
+        "y": 7
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 35
+              },
+              {
+                "color": "#629E51",
+                "value": 42
+              },
+              {
+                "color": "#70DBED",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "query": "SELECT last(\"value\") FROM \"VO2Max\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 82,
+      "title": "Daily Floors Climbed",
+      "type": "barchart",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 158
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "lineWidth": 1
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "barRadius": 0.1,
+        "barWidth": 0.8,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "never",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "query": "SELECT sum(\"value\") as \"Floors\" FROM \"Floors\" WHERE $timeFilter GROUP BY time(1d) fill(null)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 83,
+      "title": "Body Fat Percentage",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 158
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "gradientMode": "opacity",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "spanNulls": true
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "query": "SELECT mean(\"value\") as \"Body Fat %\" FROM \"Body Fat\" WHERE $timeFilter GROUP BY time(1d) fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 84,
+      "title": "Clinical Vitals, Nutrition & Wellness",
+      "type": "row",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 166
+      },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 85,
+      "title": "Hydration (Water Intake)",
+      "type": "barchart",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 167
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#38b2ac",
+            "mode": "fixed"
+          },
+          "unit": "ml"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "query": "SELECT sum(\"value\") as \"Water\" FROM \"water\" WHERE $timeFilter GROUP BY time(1d) fill(null)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 86,
+      "title": "Nutrition & Macronutrients",
+      "type": "barchart",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 167
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "g"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Calories (kcal)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "kcal"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "stacking": "normal",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "query": "SELECT mean(\"caloriesKcal\") as \"Calories (kcal)\", mean(\"proteinGrams\") as \"Protein (g)\", mean(\"carbohydratesGrams\") as \"Carbs (g)\", mean(\"fatGrams\") as \"Fat (g)\" FROM \"nutrition\" WHERE $timeFilter GROUP BY time(1d) fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 87,
+      "title": "Blood Pressure & Glucose",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 167
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "pointSize": 6,
+            "showPoints": "always",
+            "spanNulls": true
+          },
+          "unit": "mmHg"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Blood Glucose"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "mg/dL"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "query": "SELECT mean(\"systolic\") as \"Systolic\", mean(\"diastolic\") as \"Diastolic\" FROM \"BloodPressure\" WHERE $timeFilter GROUP BY time(1d) fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "query": "SELECT mean(\"value\") as \"Blood Glucose\" FROM \"BloodGlucose\" WHERE $timeFilter GROUP BY time(1d) fill(none)",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 88,
+      "title": "Mindfulness & Meditation",
+      "type": "barchart",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 175
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "#9f7aea",
+            "mode": "fixed"
+          },
+          "unit": "m"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "query": "SELECT sum(\"duration_seconds\") / 60 as \"Mindfulness Minutes\" FROM \"Mindfulness\" WHERE $timeFilter GROUP BY time(1d) fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ]
+    },
+    {
+      "id": 89,
+      "title": "ECG & Heart Rhythm Records",
+      "type": "table",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 175
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "query": "SELECT \"average_heart_rate\", \"classification\" FROM \"ECG\" WHERE $timeFilter",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ]
     }
   ],
   "refresh": "5m",
@@ -6901,8 +7355,9 @@
     "list": [
       {
         "current": {
-          "text": "Europe/Budapest",
-          "value": "Europe/Budapest"
+          "selected": true,
+          "text": "America/Los_Angeles",
+          "value": "America/Los_Angeles"
         },
         "description": "Determines the time zone for grouping by day",
         "includeAll": false,
@@ -6910,9 +7365,29 @@
         "name": "TimeZone",
         "options": [
           {
+            "selected": true,
+            "text": "America/Los_Angeles",
+            "value": "America/Los_Angeles"
+          },
+          {
+            "selected": false,
+            "text": "America/New_York",
+            "value": "America/New_York"
+          },
+          {
             "selected": false,
             "text": "America/Toronto",
             "value": "America/Toronto"
+          },
+          {
+            "selected": false,
+            "text": "Europe/London",
+            "value": "Europe/London"
+          },
+          {
+            "selected": false,
+            "text": "Europe/Budapest",
+            "value": "Europe/Budapest"
           },
           {
             "selected": false,
@@ -6920,12 +7395,12 @@
             "value": "Asia/Kolkata"
           },
           {
-            "selected": true,
-            "text": "Europe/Budapest",
-            "value": "Europe/Budapest"
+            "selected": false,
+            "text": "UTC",
+            "value": "UTC"
           }
         ],
-        "query": "America/Toronto, Asia/Kolkata, Europe/Budapest",
+        "query": "America/Los_Angeles, America/New_York, America/Toronto, Europe/London, Europe/Budapest, Asia/Kolkata, UTC",
         "type": "custom"
       },
       {
