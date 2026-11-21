@@ -517,10 +517,9 @@ def refresh_google_tokens(client_id, client_secret, refresh_token, scope=GOOGLE_
         "client_id": client_id,
         "client_secret": client_secret,
         "grant_type": "refresh_token",
-        "refresh_token": refresh_token
+        "refresh_token": refresh_token,
+        "scope": scope
     }
-    if scope:
-        data["scope"] = scope
     response = requests.post(GOOGLE_OAUTH_TOKEN_URL, data=data)
     if response.status_code != 200:
         logging.error("Google token refresh failed. Status code: %s details: %s", response.status_code, response.text)
@@ -2292,7 +2291,7 @@ def start_poller():
         schedule.every(20).minutes.do(get_battery_level)
         schedule.every(3).hours.do(lambda : get_daily_data_limit_30d(start_date_str, end_date_str))
         schedule.every(4).hours.do(lambda : get_daily_data_limit_100d(start_date_str, end_date_str))
-        schedule.every(6).hours.do( lambda : get_daily_data_limit_365d(start_date_str, end_date_str))
+        schedule.every(15).minutes.do( lambda : get_daily_data_limit_365d(start_date_str, end_date_str))
         schedule.every(6).hours.do(lambda : get_daily_data_limit_none(start_date_str, end_date_str))
         schedule.every(1).hours.do( lambda : fetch_latest_activities(end_date_str))
 
