@@ -505,7 +505,10 @@ GOOGLE_HEALTH_DATA_SCOPES = (
     "https://www.googleapis.com/auth/googlehealth.sleep.readonly "
     "https://www.googleapis.com/auth/googlehealth.location.readonly "
     "https://www.googleapis.com/auth/googlehealth.profile.readonly "
-    "https://www.googleapis.com/auth/googlehealth.settings.readonly"
+    "https://www.googleapis.com/auth/googlehealth.settings.readonly "
+    "https://www.googleapis.com/auth/googlehealth.ecg.readonly "
+    "https://www.googleapis.com/auth/googlehealth.nutrition.readonly "
+    "https://www.googleapis.com/auth/googlehealth.mindfulness.readonly"
 )
 
 def refresh_google_tokens(client_id, client_secret, refresh_token, scope=GOOGLE_HEALTH_DATA_SCOPES):
