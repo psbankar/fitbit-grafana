@@ -147,8 +147,12 @@ def process_coalesced_batch(batch: List[Dict[str, Any]]):
         if is_all or any(t in dt for dt in data_types_seen for t in ["EXERCISE", "ACTIVITY"]):
             ff.fetch_latest_activities(today_str)
 
-        # 4. Daily vitals (HRV, BR, Skin Temp, SpO2, Weight, Body Fat, VO2 Max)
-        if is_all or any(t in dt for dt in data_types_seen for t in ["HRV", "RESPIRATORY", "TEMPERATURE", "SPO2", "WEIGHT", "BODY_FAT", "VO2"]):
+        # 4. Daily vitals, clinical metrics, nutrition & wellness logs
+        vital_keywords = [
+            "HRV", "RESPIRATORY", "TEMPERATURE", "SPO2", "WEIGHT", "BODY_FAT", "VO2",
+            "GLUCOSE", "PRESSURE", "MINDFUL", "MOOD", "SYMPTOM", "ECG", "HYDRATION", "NUTRITION"
+        ]
+        if is_all or any(t in dt for dt in data_types_seen for t in vital_keywords):
             ff.get_daily_data_limit_30d(yesterday_str, today_str)
             ff.get_daily_data_limit_none(yesterday_str, today_str)
             ff.get_daily_data_limit_365d(yesterday_str, today_str)

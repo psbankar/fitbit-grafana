@@ -1158,7 +1158,179 @@ def get_daily_data_limit_30d(start_date_str, end_date_str):
             inserted_count += 1
         if inserted_count:
             logging.info("Recorded Nutrition for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
- 
+
+        # --- Blood Glucose (blood-glucose) ---
+        try:
+            points = get_google_datapoints_for_date_range("blood-glucose", start_date_str, end_date_str)
+        except requests.exceptions.HTTPError as e:
+            logging.debug("Google Blood Glucose fetch failed: %s", str(e))
+            points = []
+        inserted_count = 0
+        for data_point, ts in points:
+            bg_fields = data_point.get("bloodGlucose", {})
+            val = extract_first_numeric(bg_fields.get("bloodGlucoseMilligramsPerDeciliter")) or extract_first_numeric(bg_fields.get("bloodGlucoseMillimolesPerLiter")) or extract_first_numeric(bg_fields)
+            if val is None:
+                continue
+            collected_records.append({
+                "measurement": "BloodGlucose",
+                "time": ts,
+                "tags": {"Device": DEVICENAME},
+                "fields": {"value": float(val)}
+            })
+            inserted_count += 1
+        if inserted_count:
+            logging.info("Recorded Blood Glucose for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
+
+        # --- Blood Pressure (blood-pressure) ---
+        try:
+            points = get_google_datapoints_for_date_range("blood-pressure", start_date_str, end_date_str)
+        except requests.exceptions.HTTPError as e:
+            logging.debug("Google Blood Pressure fetch failed: %s", str(e))
+            points = []
+        inserted_count = 0
+        for data_point, ts in points:
+            bp_fields = data_point.get("bloodPressure", {})
+            systolic = extract_first_numeric(bp_fields.get("systolicMillimetersOfMercury")) or extract_first_numeric(bp_fields.get("systolic"))
+            diastolic = extract_first_numeric(bp_fields.get("diastolicMillimetersOfMercury")) or extract_first_numeric(bp_fields.get("diastolic"))
+            fields = {}
+            if systolic is not None:
+                fields["systolic"] = float(systolic)
+            if diastolic is not None:
+                fields["diastolic"] = float(diastolic)
+            if not fields:
+                continue
+            collected_records.append({
+                "measurement": "BloodPressure",
+                "time": ts,
+                "tags": {"Device": DEVICENAME},
+                "fields": fields
+            })
+            inserted_count += 1
+        if inserted_count:
+            logging.info("Recorded Blood Pressure for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
+
+        # --- Core Body Temperature (core-body-temperature) ---
+        try:
+            points = get_google_datapoints_for_date_range("core-body-temperature", start_date_str, end_date_str)
+        except requests.exceptions.HTTPError as e:
+            logging.debug("Google Core Body Temp fetch failed: %s", str(e))
+            points = []
+        inserted_count = 0
+        for data_point, ts in points:
+            cbt_fields = data_point.get("coreBodyTemperature", {})
+            temp = extract_first_numeric(cbt_fields.get("temperatureDegreesCelsius")) or extract_first_numeric(cbt_fields)
+            if temp is None:
+                continue
+            collected_records.append({
+                "measurement": "CoreBodyTemperature",
+                "time": ts,
+                "tags": {"Device": DEVICENAME},
+                "fields": {"value": float(temp)}
+            })
+            inserted_count += 1
+        if inserted_count:
+            logging.info("Recorded Core Body Temp for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
+
+        # --- Mindfulness (mindfulness) ---
+        try:
+            points = get_google_datapoints_for_date_range("mindfulness", start_date_str, end_date_str)
+        except requests.exceptions.HTTPError as e:
+            logging.debug("Google Mindfulness fetch failed: %s", str(e))
+            points = []
+        inserted_count = 0
+        for data_point, ts in points:
+            mf_fields = data_point.get("mindfulness", {})
+            duration = extract_first_numeric(mf_fields.get("durationSeconds")) or extract_first_numeric(mf_fields.get("durationMilliseconds")) or extract_first_numeric(mf_fields)
+            if duration is None:
+                continue
+            collected_records.append({
+                "measurement": "Mindfulness",
+                "time": ts,
+                "tags": {"Device": DEVICENAME},
+                "fields": {"duration_seconds": float(duration)}
+            })
+            inserted_count += 1
+        if inserted_count:
+            logging.info("Recorded Mindfulness for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
+
+        # --- Moods (moods) ---
+        try:
+            points = get_google_datapoints_for_date_range("moods", start_date_str, end_date_str)
+        except requests.exceptions.HTTPError as e:
+            logging.debug("Google Moods fetch failed: %s", str(e))
+            points = []
+        inserted_count = 0
+        for data_point, ts in points:
+            mood_fields = data_point.get("moods", {})
+            val = extract_first_numeric(mood_fields.get("score")) or extract_first_numeric(mood_fields)
+            fields = {}
+            if val is not None:
+                fields["value"] = float(val)
+            for k, v in mood_fields.items():
+                if isinstance(v, (int, float)):
+                    fields[k] = float(v)
+            if not fields:
+                fields["logged"] = 1.0
+            collected_records.append({
+                "measurement": "Moods",
+                "time": ts,
+                "tags": {"Device": DEVICENAME},
+                "fields": fields
+            })
+            inserted_count += 1
+        if inserted_count:
+            logging.info("Recorded Moods for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
+
+        # --- Symptoms (symptoms) ---
+        try:
+            points = get_google_datapoints_for_date_range("symptoms", start_date_str, end_date_str)
+        except requests.exceptions.HTTPError as e:
+            logging.debug("Google Symptoms fetch failed: %s", str(e))
+            points = []
+        inserted_count = 0
+        for data_point, ts in points:
+            sym_fields = data_point.get("symptoms", {})
+            fields = {"logged": 1.0}
+            for k, v in sym_fields.items():
+                if isinstance(v, (int, float)):
+                    fields[k] = float(v)
+            collected_records.append({
+                "measurement": "Symptoms",
+                "time": ts,
+                "tags": {"Device": DEVICENAME},
+                "fields": fields
+            })
+            inserted_count += 1
+        if inserted_count:
+            logging.info("Recorded Symptoms for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
+
+        # --- ECG (ecg) ---
+        try:
+            points = get_google_datapoints_for_date_range("ecg", start_date_str, end_date_str)
+        except requests.exceptions.HTTPError as e:
+            logging.debug("Google ECG fetch failed: %s", str(e))
+            points = []
+        inserted_count = 0
+        for data_point, ts in points:
+            ecg_fields = data_point.get("ecg", {})
+            hr = extract_first_numeric(ecg_fields.get("averageHeartRateBeatsPerMinute")) or extract_first_numeric(ecg_fields)
+            fields = {"logged": 1.0}
+            if hr is not None:
+                fields["average_heart_rate"] = float(hr)
+            classification = ecg_fields.get("rhythmClassification") or ecg_fields.get("classification")
+            tags = {"Device": DEVICENAME}
+            if classification:
+                tags["classification"] = str(classification)
+            collected_records.append({
+                "measurement": "ECG",
+                "time": ts,
+                "tags": tags,
+                "fields": fields
+            })
+            inserted_count += 1
+        if inserted_count:
+            logging.info("Recorded ECG for date %s to %s (Google mode): %s points", start_date_str, end_date_str, inserted_count)
+
         return  # ← Google path done, skip Fitbit code below
  
     # --- Original Fitbit path (unchanged) ---
