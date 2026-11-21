@@ -1101,14 +1101,24 @@ def get_daily_data_limit_30d(start_date_str, end_date_str):
         inserted_count = 0
         for data_point, ts in points:
             vo2_fields = data_point.get("dailyVo2Max", {})
-            vo2_val = extract_first_numeric(vo2_fields.get("vo2MaxMillilitersPerMinutePerKilogram")) or extract_first_numeric(vo2_fields)
+            vo2_val = (
+                extract_first_numeric(vo2_fields.get("vo2Max"))
+                or extract_first_numeric(vo2_fields.get("vo2MaxMillilitersPerMinutePerKilogram"))
+            )
             if vo2_val is None:
                 continue
+            cardio_level = vo2_fields.get("cardioFitnessLevel") or "UNKNOWN"
+            tags = {"Device": DEVICENAME}
+            if cardio_level != "UNKNOWN":
+                tags["cardioFitnessLevel"] = str(cardio_level)
             collected_records.append({
                 "measurement": "VO2Max",
                 "time": ts,
-                "tags": {"Device": DEVICENAME},
-                "fields": {"value": float(vo2_val)}
+                "tags": tags,
+                "fields": {
+                    "value": round(float(vo2_val), 1),
+                    "raw_value": float(vo2_val)
+                }
             })
             inserted_count += 1
         if inserted_count:

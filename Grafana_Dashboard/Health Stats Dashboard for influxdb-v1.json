@@ -540,66 +540,16 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds",
-            "seriesBy": "last"
+            "fixedColor": "#9f7aea",
+            "mode": "fixed"
           },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
             "drawStyle": "bars",
-            "fillOpacity": 18,
-            "gradientMode": "scheme",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": 60000,
-            "lineInterpolation": "smooth",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 3,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
-          "fieldMinMax": true,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "semi-dark-blue"
-              },
-              {
-                "color": "semi-dark-green",
-                "value": 5
-              },
-              {
-                "color": "dark-yellow",
-                "value": 25
-              },
-              {
-                "color": "semi-dark-red",
-                "value": 65
-              }
-            ]
+            "barWidthFactor": 0.8,
+            "fillOpacity": 80,
+            "pointSize": 2,
+            "showPoints": "never",
+            "spanNulls": false
           },
           "unit": "none"
         },
@@ -615,16 +565,14 @@
       "options": {
         "legend": {
           "calcs": [
-            "min",
-            "max",
-            "mean"
+            "sum",
+            "max"
           ],
           "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
         "tooltip": {
-          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
@@ -632,85 +580,18 @@
       "pluginVersion": "11.6.0",
       "targets": [
         {
-          "alias": "Intraday Steps",
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_HEALTH_STATS}"
           },
-          "groupBy": [
-            {
-              "params": [
-                "1m"
-              ],
-              "type": "time"
-            }
-          ],
-          "hide": false,
-          "measurement": "Steps_Intraday",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT moving_average(mean(\"value\"), 6) FROM \"HeartRate_Intraday\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
-          "queryType": "randomWalk",
-          "rawQuery": false,
+          "query": "SELECT sum(\"value\") as \"Steps\" FROM \"Steps_Intraday\" WHERE $timeFilter GROUP BY time($__interval) fill(0)",
+          "rawQuery": true,
           "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": []
+          "resultFormat": "time_series"
         }
       ],
       "timeFrom": "24h",
-      "title": "Intraday Steps",
-      "transformations": [
-        {
-          "id": "calculateField",
-          "options": {
-            "alias": "Intraday Steps",
-            "mode": "windowFunctions",
-            "reduce": {
-              "reducer": "sum"
-            },
-            "replaceFields": true,
-            "window": {
-              "field": "Intraday Steps",
-              "reducer": "mean",
-              "windowAlignment": "centered",
-              "windowSize": 0.003,
-              "windowSizeMode": "percentage"
-            }
-          }
-        },
-        {
-          "id": "filterByValue",
-          "options": {
-            "filters": [
-              {
-                "config": {
-                  "id": "notEqual",
-                  "options": {
-                    "value": "0"
-                  }
-                },
-                "fieldName": "Intraday Steps"
-              }
-            ],
-            "match": "any",
-            "type": "include"
-          }
-        }
-      ],
+      "title": "Intraday Steps (Cadence)",
       "transparent": true,
       "type": "timeseries"
     },
@@ -1946,40 +1827,6 @@
           "color": {
             "mode": "palette-classic"
           },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 80,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
           "unit": "m"
         },
         "overrides": [
@@ -1992,7 +1839,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "dark-blue",
+                  "fixedColor": "#1F60C4",
                   "mode": "fixed"
                 }
               }
@@ -2007,7 +1854,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "light-blue",
+                  "fixedColor": "#5794F2",
                   "mode": "fixed"
                 }
               }
@@ -2022,7 +1869,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "light-yellow",
+                  "fixedColor": "#FADE2A",
                   "mode": "fixed"
                 }
               }
@@ -2037,7 +1884,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "semi-dark-red",
+                  "fixedColor": "#F2495C",
                   "mode": "fixed"
                 }
               }
@@ -2053,212 +1900,38 @@
       },
       "id": 44,
       "options": {
-        "barRadius": 0.25,
-        "barWidth": 0.4,
-        "fullHighlight": false,
+        "barRadius": 0.15,
+        "barWidth": 0.5,
         "groupWidth": 0.7,
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": [
+            "mean"
+          ],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
-        "orientation": "auto",
         "showValue": "auto",
         "stacking": "normal",
         "tooltip": {
-          "hideZeros": false,
-          "maxHeight": 600,
-          "mode": "single",
+          "mode": "multi",
           "sort": "none"
-        },
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 100
+        }
       },
       "pluginVersion": "11.6.0",
       "targets": [
         {
-          "alias": "Deep",
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_HEALTH_STATS}"
           },
-          "groupBy": [
-            {
-              "params": [
-                "1d"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "hide": false,
-          "measurement": "Sleep Summary",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT distinct(\"minutes_deep\") FROM \"sleep\" WHERE is_main_sleep = true AND $timeFilter GROUP BY time($__interval) fill(null)",
-          "rawQuery": false,
+          "query": "SELECT mean(\"minutesDeep\") as \"Deep\", mean(\"minutesLight\") as \"Light\", mean(\"minutesREM\") as \"REM\", mean(\"minutesAwake\") as \"Awake\" FROM \"Sleep Summary\" WHERE $timeFilter GROUP BY time(1d) fill(none)",
+          "rawQuery": true,
           "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "minutesDeep"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [],
-          "tz": "$TimeZone"
-        },
-        {
-          "alias": "Light",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_HEALTH_STATS}"
-          },
-          "groupBy": [
-            {
-              "params": [
-                "1d"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "hide": false,
-          "measurement": "Sleep Summary",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT distinct(\"minutes_deep\") FROM \"sleep\" WHERE is_main_sleep = true AND $timeFilter GROUP BY time($__interval) fill(null)",
-          "rawQuery": false,
-          "refId": "B",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "minutesLight"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [],
-          "tz": "$TimeZone"
-        },
-        {
-          "alias": "REM",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_HEALTH_STATS}"
-          },
-          "groupBy": [
-            {
-              "params": [
-                "1d"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "hide": false,
-          "measurement": "Sleep Summary",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT distinct(\"minutes_deep\") FROM \"sleep\" WHERE is_main_sleep = true AND $timeFilter GROUP BY time($__interval) fill(null)",
-          "rawQuery": false,
-          "refId": "C",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "minutesREM"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [],
-          "tz": "$TimeZone"
-        },
-        {
-          "alias": "Awake",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_HEALTH_STATS}"
-          },
-          "groupBy": [
-            {
-              "params": [
-                "1d"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "hide": false,
-          "measurement": "Sleep Summary",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT distinct(\"minutes_deep\") FROM \"sleep\" WHERE is_main_sleep = true AND $timeFilter GROUP BY time($__interval) fill(null)",
-          "rawQuery": false,
-          "refId": "D",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "minutesAwake"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [],
-          "tz": "$TimeZone"
+          "resultFormat": "time_series"
         }
       ],
-      "title": "Sleep",
+      "title": "Sleep Stages (Daily Breakdown)",
       "type": "barchart"
     },
     {
@@ -2270,43 +1943,36 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "thresholds"
           },
           "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 80,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 0,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto",
+            "spanNulls": true
           },
-          "mappings": [],
+          "min": 50,
+          "max": 100,
+          "unit": "percent",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
+                "color": "#F2495C",
+                "value": null
               },
               {
-                "color": "red",
-                "value": 80
+                "color": "#FF780A",
+                "value": 75
+              },
+              {
+                "color": "#73BF69",
+                "value": 85
               }
             ]
-          },
-          "unit": "percent"
+          }
         },
         "overrides": []
       },
@@ -2318,78 +1984,35 @@
       },
       "id": 45,
       "options": {
-        "barRadius": 0.25,
-        "barWidth": 0.58,
-        "fullHighlight": false,
-        "groupWidth": 0.7,
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
-        "orientation": "auto",
-        "showValue": "auto",
-        "stacking": "none",
         "tooltip": {
-          "hideZeros": false,
-          "maxHeight": 600,
           "mode": "single",
           "sort": "none"
-        },
-        "xTickLabelRotation": 0,
-        "xTickLabelSpacing": 100
+        }
       },
       "pluginVersion": "11.6.0",
       "targets": [
         {
-          "alias": "Efficiency",
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_HEALTH_STATS}"
           },
-          "groupBy": [
-            {
-              "params": [
-                "1d"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "hide": false,
-          "measurement": "Sleep Summary",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT distinct(\"minutes_deep\") FROM \"sleep\" WHERE is_main_sleep = true AND $timeFilter GROUP BY time($__interval) fill(null)",
-          "rawQuery": false,
-          "refId": "F",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "efficiency"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [],
-          "tz": "$TimeZone"
+          "query": "SELECT mean(\"efficiency\") as \"Efficiency\" FROM \"Sleep Summary\" WHERE $timeFilter GROUP BY time(1d) fill(none)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
         }
       ],
       "title": "Sleep Efficiency",
-      "type": "barchart"
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -2549,14 +2172,6 @@
           "color": {
             "mode": "palette-classic"
           },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": [],
           "unit": "m"
         },
         "overrides": [
@@ -2569,22 +2184,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "semi-dark-blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "REM"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-yellow",
+                  "fixedColor": "#1F60C4",
                   "mode": "fixed"
                 }
               }
@@ -2599,7 +2199,22 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "super-light-blue",
+                  "fixedColor": "#5794F2",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "REM"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#FADE2A",
                   "mode": "fixed"
                 }
               }
@@ -2614,7 +2229,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "light-red",
+                  "fixedColor": "#F2495C",
                   "mode": "fixed"
                 }
               }
@@ -2642,14 +2257,12 @@
         "pieType": "donut",
         "reduceOptions": {
           "calcs": [
-            "mean"
+            "sum"
           ],
           "fields": "",
           "values": false
         },
         "tooltip": {
-          "hideZeros": false,
-          "maxHeight": 600,
           "mode": "single",
           "sort": "none"
         }
@@ -2657,184 +2270,17 @@
       "pluginVersion": "11.6.0",
       "targets": [
         {
-          "alias": "Deep",
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_HEALTH_STATS}"
           },
-          "groupBy": [
-            {
-              "params": [
-                "1d"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "hide": false,
-          "measurement": "Sleep Summary",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT distinct(\"minutes_deep\") FROM \"sleep\" WHERE is_main_sleep = true AND $timeFilter GROUP BY time($__interval) fill(null)",
-          "rawQuery": false,
-          "refId": "F",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "minutesDeep"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": [],
-          "tz": "$TimeZone"
-        },
-        {
-          "alias": "Light",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_HEALTH_STATS}"
-          },
-          "groupBy": [
-            {
-              "params": [
-                "1d"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "hide": false,
-          "measurement": "Sleep Summary",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT distinct(\"minutes_deep\") FROM \"sleep\" WHERE is_main_sleep = true AND $timeFilter GROUP BY time($__interval) fill(null)",
-          "rawQuery": false,
+          "query": "SELECT sum(\"minutesDeep\") as \"Deep\", sum(\"minutesLight\") as \"Light\", sum(\"minutesREM\") as \"REM\", sum(\"minutesAwake\") as \"Awake\" FROM \"Sleep Summary\" WHERE $timeFilter",
+          "rawQuery": true,
           "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "minutesLight"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": []
-        },
-        {
-          "alias": "REM",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_HEALTH_STATS}"
-          },
-          "groupBy": [
-            {
-              "params": [
-                "1d"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "hide": false,
-          "measurement": "Sleep Summary",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT distinct(\"minutes_deep\") FROM \"sleep\" WHERE is_main_sleep = true AND $timeFilter GROUP BY time($__interval) fill(null)",
-          "rawQuery": false,
-          "refId": "B",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "minutesREM"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": []
-        },
-        {
-          "alias": "Awake",
-          "datasource": {
-            "type": "influxdb",
-            "uid": "${DS_HEALTH_STATS}"
-          },
-          "groupBy": [
-            {
-              "params": [
-                "1d"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "hide": false,
-          "measurement": "Sleep Summary",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT distinct(\"minutes_deep\") FROM \"sleep\" WHERE is_main_sleep = true AND $timeFilter GROUP BY time($__interval) fill(null)",
-          "rawQuery": false,
-          "refId": "C",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "minutesAwake"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": []
+          "resultFormat": "time_series"
         }
       ],
-      "title": "Average Sleep trends",
+      "title": "Sleep Stage Proportion",
       "type": "piechart"
     },
     {
@@ -3899,40 +3345,24 @@
           "color": {
             "mode": "thresholds"
           },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "fillOpacity": 80,
-            "gradientMode": "scheme",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
-          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "super-light-red"
+                "color": "#F2495C",
+                "value": null
               },
               {
-                "color": "light-green",
+                "color": "#5794F2",
+                "value": 7500
+              },
+              {
+                "color": "#73BF69",
                 "value": 10000
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": []
       },
@@ -3945,28 +3375,23 @@
       "id": 17,
       "options": {
         "barRadius": 0.15,
-        "barWidth": 0.44,
-        "colorByField": "Total Steps.value",
-        "fullHighlight": false,
+        "barWidth": 0.5,
         "groupWidth": 0.7,
         "legend": {
-          "calcs": [],
-          "displayMode": "list",
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
-        "orientation": "auto",
         "showValue": "auto",
         "stacking": "none",
         "tooltip": {
-          "hideZeros": false,
-          "maxHeight": 600,
           "mode": "single",
           "sort": "none"
-        },
-        "xField": "Time",
-        "xTickLabelRotation": -45,
-        "xTickLabelSpacing": -100
+        }
       },
       "pluginVersion": "11.6.0",
       "targets": [
@@ -3975,29 +3400,13 @@
             "type": "influxdb",
             "uid": "${DS_HEALTH_STATS}"
           },
-          "groupBy": [],
-          "measurement": "Total Steps",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT sum(\"value\") FROM \"Steps\" WHERE $timeFilter GROUP BY time(1d, ) fill(null)",
-          "queryType": "randomWalk",
-          "rawQuery": false,
+          "query": "SELECT sum(\"value\") as \"Steps\" FROM \"Total Steps\" WHERE $timeFilter GROUP BY time(1d) fill(null)",
+          "rawQuery": true,
           "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              }
-            ]
-          ],
-          "tags": []
+          "resultFormat": "time_series"
         }
       ],
-      "title": "Steps",
+      "title": "Daily Steps (10,000 Goal)",
       "type": "barchart"
     },
     {
@@ -5410,50 +4819,14 @@
       "pluginVersion": "11.6.0",
       "targets": [
         {
-          "alias": "Heart rate",
           "datasource": {
             "type": "influxdb",
             "uid": "${DS_HEALTH_STATS}"
           },
-          "groupBy": [
-            {
-              "params": [
-                "5m"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "0"
-              ],
-              "type": "fill"
-            }
-          ],
-          "hide": false,
-          "measurement": "HeartRate_Intraday",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT mean(value) FROM \"heartrate\" WHERE $timeFilter GROUP BY time(2m) fill(0)",
-          "queryType": "randomWalk",
-          "rawQuery": false,
+          "query": "SELECT mean(\"value\") FROM \"HeartRate_Intraday\" WHERE $timeFilter GROUP BY time(2m) fill(none)",
+          "rawQuery": true,
           "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "last"
-              }
-            ]
-          ],
-          "tags": [],
-          "tz": "$TimeZone"
+          "resultFormat": "time_series"
         }
       ],
       "title": "Band wearing ",
@@ -6858,7 +6231,7 @@
     {
       "id": 81,
       "title": "Cardio Fitness (VO2 Max)",
-      "type": "stat",
+      "type": "gauge",
       "gridPos": {
         "h": 3,
         "w": 3,
@@ -6874,45 +6247,48 @@
           "color": {
             "mode": "thresholds"
           },
-          "mappings": [],
+          "min": 25,
+          "max": 60,
+          "unit": "none",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
+                "color": "#E02F44",
                 "value": null
               },
               {
+                "color": "#FF780A",
+                "value": 32
+              },
+              {
                 "color": "#EAB839",
-                "value": 35
+                "value": 38
               },
               {
-                "color": "#629E51",
-                "value": 42
+                "color": "#73BF69",
+                "value": 44
               },
               {
-                "color": "#70DBED",
+                "color": "#56A64B",
                 "value": 50
               }
             ]
-          },
-          "unit": "none"
+          }
         },
         "overrides": []
       },
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
         "orientation": "auto",
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true,
         "reduceOptions": {
+          "values": false,
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
+          "fields": ""
+        }
       },
       "targets": [
         {
@@ -6920,7 +6296,7 @@
             "type": "influxdb",
             "uid": "${DS_HEALTH_STATS}"
           },
-          "query": "SELECT last(\"value\") FROM \"VO2Max\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+          "query": "SELECT last(\"value\") as \"VO2 Max\" FROM \"VO2Max\" WHERE $timeFilter",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
@@ -7049,7 +6425,7 @@
             "type": "influxdb",
             "uid": "${DS_HEALTH_STATS}"
           },
-          "query": "SELECT mean(\"value\") as \"Body Fat %\" FROM \"Body Fat\" WHERE $timeFilter GROUP BY time(1d) fill(none)",
+          "query": "SELECT mean(\"value\") as \"Body Fat %\" FROM \"body_fat\" WHERE $timeFilter GROUP BY time(1d) fill(none)",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series"
