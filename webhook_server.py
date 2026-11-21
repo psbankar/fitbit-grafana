@@ -100,16 +100,31 @@ def process_coalesced_batch(batch: List[Dict[str, Any]]):
 
     for event in batch:
         dt = event.get("dataType", "").upper()
-        data_types_seen.add(dt)
+        if dt:
+            data_types_seen.add(dt)
         if "date" in event:
             dates_seen.add(event["date"])
+        # Also extract dates from intervals if present (e.g. Google physicalTimeInterval)
+        intervals = event.get("intervals") or []
+        for interval in intervals:
+            if isinstance(interval, dict):
+                p_interval = interval.get("physicalTimeInterval") or interval
+                start_time = p_interval.get("startTime")
+                if start_time:
+                    try:
+                        dt_obj = datetime.fromisoformat(start_time.replace("Z", "+00:00")).astimezone(ff.LOCAL_TIMEZONE)
+                        dates_seen.add(dt_obj.strftime("%Y-%m-%d"))
+                    except Exception:
+                        pass
 
     if not dates_seen:
         dates_seen.add(today_str)
         dates_seen.add(yesterday_str)
 
-    logging.info("Executing targeted ingest for data types: %s across dates: %s",
-                 list(data_types_seen), list(dates_seen))
+    is_all = any(x in data_types_seen for x in ["ALL", "STARTUP_SYNC", "SAFETY_SWEEP"]) or not data_types_seen
+
+    logging.info("Executing targeted ingest for data types: %s (is_all=%s) across dates: %s",
+                 list(data_types_seen), is_all, list(dates_seen))
 
     try:
         # Refresh token before querying
@@ -117,23 +132,23 @@ def process_coalesced_batch(batch: List[Dict[str, Any]]):
             ff.Get_New_Access_Token(ff.client_id, ff.client_secret)
 
         # 1. Heart rate & steps intraday
-        if any(t in dt for dt in data_types_seen for t in ["HEART", "STEP"]) or not data_types_seen:
-            for date_str in dates_seen:
+        if is_all or any(t in dt for dt in data_types_seen for t in ["HEART", "STEP"]):
+            for date_str in sorted(dates_seen):
                 ff.get_intraday_data_limit_1d(date_str, [
                     ('heart', 'HeartRate_Intraday', '1sec'),
                     ('steps', 'Steps_Intraday', '1min')
                 ])
 
         # 2. Sleep sessions and stages
-        if any("SLEEP" in dt for dt in data_types_seen) or not data_types_seen:
+        if is_all or any("SLEEP" in dt for dt in data_types_seen):
             ff.get_daily_data_limit_100d(yesterday_str, today_str)
 
         # 3. Workouts and TCX GPS
-        if any(t in dt for dt in data_types_seen for t in ["EXERCISE", "ACTIVITY"]) or not data_types_seen:
+        if is_all or any(t in dt for dt in data_types_seen for t in ["EXERCISE", "ACTIVITY"]):
             ff.fetch_latest_activities(today_str)
 
         # 4. Daily vitals (HRV, BR, Skin Temp, SpO2, Weight, Body Fat, VO2 Max)
-        if any(t in dt for dt in data_types_seen for t in ["HRV", "RESPIRATORY", "TEMPERATURE", "SPO2", "WEIGHT", "BODY_FAT", "VO2"]) or not data_types_seen:
+        if is_all or any(t in dt for dt in data_types_seen for t in ["HRV", "RESPIRATORY", "TEMPERATURE", "SPO2", "WEIGHT", "BODY_FAT", "VO2"]):
             ff.get_daily_data_limit_30d(yesterday_str, today_str)
             ff.get_daily_data_limit_none(yesterday_str, today_str)
             ff.get_daily_data_limit_365d(yesterday_str, today_str)
@@ -162,6 +177,8 @@ async def lifespan(app: FastAPI):
     worker_task = asyncio.create_task(coalescing_worker())
     safety_sweep_task = asyncio.create_task(safety_sweep_worker())
     logging.info("FastAPI Webhook Server initialized on %s:%d", LISTEN_HOST, LISTEN_PORT)
+    # Enqueue immediate startup sync to fill any gap since last run
+    await notification_queue.put({"dataType": "STARTUP_SYNC", "received_at": datetime.now(timezone.utc).isoformat()})
     yield
     if worker_task:
         worker_task.cancel()
@@ -213,20 +230,31 @@ async def receive_webhook(request: Request, response: Response):
             return Response(status_code=401, content="Unauthorized")
 
     try:
-        body = await request.json()
+        raw_body = await request.body()
+        body = json.loads(raw_body.decode('utf-8')) if raw_body else {}
     except Exception:
-        # Challenge probe might send empty or plain text body
         body = {}
 
     logging.info("Received authenticated webhook notification from Google Health API")
 
-    # If payload contains structured notifications, queue them
-    notifications = body.get("notifications") or body.get("events") or []
-    if isinstance(notifications, list) and len(notifications) > 0:
-        for event in notifications:
-            await notification_queue.put(event)
+    items = []
+    if isinstance(body, list):
+        items = body
+    elif isinstance(body, dict):
+        if "notifications" in body and isinstance(body["notifications"], list):
+            items = body["notifications"]
+        elif "events" in body and isinstance(body["events"], list):
+            items = body["events"]
+        elif "data" in body or "dataType" in body:
+            items = [body]
+
+    if items:
+        for item in items:
+            event = item.get("data") if (isinstance(item, dict) and "data" in item) else item
+            if isinstance(event, dict):
+                await notification_queue.put(event)
     else:
-        # Registration test probe or generic ping
+        # Registration test probe or generic ping -> trigger full sync
         await notification_queue.put({"dataType": "ALL", "received_at": datetime.now(timezone.utc).isoformat()})
 
     # Return 201 Created as required by Google Health API subscriber verification handshake
