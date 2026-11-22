@@ -13,6 +13,7 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client_3 import InfluxDBClient3, InfluxDBError
 # For XML processing
 import xml.etree.ElementTree as ET
+import health_score_calc as hsc
 
 # %% [markdown]
 # ## Variables
@@ -2333,6 +2334,10 @@ def start_poller():
         fetch_latest_activities(end_date_str)
         write_points_to_influxdb(collected_records)
         collected_records = []
+        try:
+            hsc.sync_recent(days=3)
+        except Exception as e:
+            logging.error("Failed to update daily composite health scores: %s", e)
     else:
         # Do Bulk update----------------------------------------------------------------------------------------------------------------------------
         schedule.every(1).hours.do(lambda : Get_New_Access_Token(client_id,client_secret))

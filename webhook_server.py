@@ -19,6 +19,7 @@ import pytz
 
 # Ingestion functions from Fitbit_Fetch
 import Fitbit_Fetch as ff
+import health_score_calc as hsc
 
 logging.basicConfig(
     level=logging.INFO,
@@ -168,6 +169,13 @@ def process_coalesced_batch(batch: List[Dict[str, Any]]):
             ff.collected_records.clear()
         else:
             logging.info("Webhook event batch processed; no new points to write.")
+
+        # Recalculate daily composite biometric scores (OSAS, Readiness, Stress, Fitness Age)
+        try:
+            hsc.sync_recent(days=3)
+            logging.info("Successfully refreshed daily composite biometric scores in InfluxDB.")
+        except Exception as score_err:
+            logging.error("Failed to refresh daily composite scores: %s", score_err)
 
     except Exception as e:
         logging.error("Failed to process webhook ingest batch: %s", e)

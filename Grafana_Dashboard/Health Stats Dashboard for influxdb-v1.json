@@ -132,6 +132,563 @@
         "x": 0,
         "y": 0
       },
+      "id": 100,
+      "panels": [],
+      "title": "Executive Biometric Scores & Daily Readiness",
+      "type": "row"
+    },
+    {
+      "id": 101,
+      "title": "Daily Readiness Score",
+      "type": "gauge",
+      "description": "Composite readiness computed from overnight HRV (40%), resting HR (30%), and sleep architecture (30%) relative to 30-day baseline.",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "#73BF69",
+                "value": 65
+              },
+              {
+                "color": "green",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "minVizHeight": 10,
+        "minVizWidth": 10,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "groupBy": [],
+          "measurement": "Daily_Scores",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "readiness_score"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "title": "Sleep Quality (OSAS)",
+      "type": "gauge",
+      "description": "Objective Sleep Architecture Score (OSAS) based on total sleep duration (45%), deep+REM restorative ratio (35%), and WASO continuity (20%).",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 60
+              },
+              {
+                "color": "green",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "minVizHeight": 10,
+        "minVizWidth": 10,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "groupBy": [],
+          "measurement": "Daily_Scores",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "sleep_score"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "title": "Autonomic Stress Score",
+      "type": "gauge",
+      "description": "Autonomic stress index quantifying sympathetic tone (HRV suppression), hemodynamic load (RHR elevation), and sleep debt.",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 26
+              },
+              {
+                "color": "orange",
+                "value": 51
+              },
+              {
+                "color": "red",
+                "value": 76
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "minVizHeight": 10,
+        "minVizWidth": 10,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "groupBy": [],
+          "measurement": "Daily_Scores",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "stress_score"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": 104,
+      "title": "Biological Fitness Age",
+      "type": "stat",
+      "description": "Biological and functional age models: ACSM / Jackson non-exercise model & NTNU / CERG cardiopulmonary scale.",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 30
+              },
+              {
+                "color": "red",
+                "value": 45
+              }
+            ]
+          },
+          "unit": "years"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "groupBy": [],
+          "measurement": "Daily_Scores",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "bio_age"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "groupBy": [],
+          "measurement": "Daily_Scores",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "cerg_fitness_age"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        }
+      ]
+    },
+    {
+      "id": 105,
+      "title": "Scores History (Readiness / Sleep / Stress)",
+      "type": "timeseries",
+      "description": "Multi-variable longitudinal trend of daily readiness, objective sleep architecture, and autonomic stress.",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 1
+      },
+      "datasource": {
+        "type": "influxdb",
+        "uid": "${DS_HEALTH_STATS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "spanNulls": true
+          },
+          "color": {
+            "mode": "palette-classic"
+          },
+          "max": 100,
+          "min": 0,
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Daily_Scores.readiness_score"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Daily Readiness"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#73BF69",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Daily_Scores.sleep_score"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Sleep Score (OSAS)"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#5794F2",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Daily_Scores.stress_score"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Autonomic Stress"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#F2495C",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "groupBy": [],
+          "measurement": "Daily_Scores",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "readiness_score"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "groupBy": [],
+          "measurement": "Daily_Scores",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "sleep_score"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "groupBy": [],
+          "measurement": "Daily_Scores",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "C",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "stress_score"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
       "id": 54,
       "panels": [],
       "title": "Recent Data",
@@ -218,7 +775,7 @@
         "h": 9,
         "w": 21,
         "x": 3,
-        "y": 1
+        "y": 8
       },
       "id": 66,
       "options": {
@@ -362,7 +919,7 @@
         "h": 3,
         "w": 3,
         "x": 0,
-        "y": 1
+        "y": 8
       },
       "hideTimeOverride": true,
       "id": 65,
@@ -473,7 +1030,7 @@
         "h": 3,
         "w": 3,
         "x": 0,
-        "y": 4
+        "y": 11
       },
       "hideTimeOverride": true,
       "id": 59,
@@ -559,7 +1116,7 @@
         "h": 8,
         "w": 21,
         "x": 3,
-        "y": 10
+        "y": 17
       },
       "id": 75,
       "options": {
@@ -666,7 +1223,7 @@
         "h": 4,
         "w": 3,
         "x": 0,
-        "y": 11
+        "y": 18
       },
       "hideTimeOverride": true,
       "id": 67,
@@ -866,7 +1423,7 @@
         "h": 5,
         "w": 3,
         "x": 0,
-        "y": 15
+        "y": 22
       },
       "id": 27,
       "options": {
@@ -1076,7 +1633,7 @@
         "h": 6,
         "w": 21,
         "x": 3,
-        "y": 18
+        "y": 25
       },
       "hideTimeOverride": true,
       "id": 36,
@@ -1191,7 +1748,7 @@
         "h": 5,
         "w": 3,
         "x": 0,
-        "y": 20
+        "y": 27
       },
       "id": 30,
       "options": {
@@ -1333,7 +1890,7 @@
         "h": 5,
         "w": 21,
         "x": 3,
-        "y": 24
+        "y": 31
       },
       "hideTimeOverride": true,
       "id": 40,
@@ -1439,7 +1996,7 @@
         "h": 6,
         "w": 3,
         "x": 0,
-        "y": 25
+        "y": 32
       },
       "id": 37,
       "options": {
@@ -1613,7 +2170,7 @@
         "h": 8,
         "w": 21,
         "x": 3,
-        "y": 29
+        "y": 36
       },
       "hideTimeOverride": true,
       "id": 39,
@@ -1733,7 +2290,7 @@
         "h": 6,
         "w": 3,
         "x": 0,
-        "y": 31
+        "y": 38
       },
       "id": 50,
       "options": {
@@ -1806,7 +2363,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 37
+        "y": 44
       },
       "id": 52,
       "panels": [],
@@ -1896,7 +2453,7 @@
         "h": 8,
         "w": 9,
         "x": 0,
-        "y": 38
+        "y": 45
       },
       "id": 44,
       "options": {
@@ -1980,7 +2537,7 @@
         "h": 8,
         "w": 7,
         "x": 9,
-        "y": 38
+        "y": 45
       },
       "id": 45,
       "options": {
@@ -2085,7 +2642,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 38
+        "y": 45
       },
       "id": 63,
       "options": {
@@ -2241,7 +2798,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 46
+        "y": 53
       },
       "id": 48,
       "options": {
@@ -2339,7 +2896,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 46
+        "y": 53
       },
       "id": 42,
       "options": {
@@ -2425,7 +2982,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 55
+        "y": 62
       },
       "id": 56,
       "panels": [],
@@ -2543,7 +3100,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 56
+        "y": 63
       },
       "id": 32,
       "options": {
@@ -2750,7 +3307,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 56
+        "y": 63
       },
       "id": 35,
       "options": {
@@ -2957,7 +3514,7 @@
         "h": 7,
         "w": 12,
         "x": 0,
-        "y": 65
+        "y": 72
       },
       "id": 7,
       "options": {
@@ -3134,7 +3691,7 @@
         "h": 7,
         "w": 12,
         "x": 12,
-        "y": 65
+        "y": 72
       },
       "id": 5,
       "options": {
@@ -3245,7 +3802,7 @@
         "h": 9,
         "w": 12,
         "x": 0,
-        "y": 72
+        "y": 79
       },
       "id": 29,
       "options": {
@@ -3370,7 +3927,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 72
+        "y": 79
       },
       "id": 17,
       "options": {
@@ -3476,7 +4033,7 @@
         "h": 10,
         "w": 7,
         "x": 0,
-        "y": 81
+        "y": 88
       },
       "id": 13,
       "options": {
@@ -3723,7 +4280,7 @@
         "h": 10,
         "w": 7,
         "x": 7,
-        "y": 81
+        "y": 88
       },
       "id": 15,
       "options": {
@@ -3961,7 +4518,7 @@
         "h": 10,
         "w": 5,
         "x": 14,
-        "y": 81
+        "y": 88
       },
       "id": 73,
       "options": {
@@ -4108,7 +4665,7 @@
         "h": 10,
         "w": 5,
         "x": 19,
-        "y": 81
+        "y": 88
       },
       "id": 74,
       "options": {
@@ -4265,7 +4822,7 @@
         "h": 10,
         "w": 8,
         "x": 0,
-        "y": 91
+        "y": 98
       },
       "id": 47,
       "options": {
@@ -4521,7 +5078,7 @@
         "h": 10,
         "w": 8,
         "x": 8,
-        "y": 91
+        "y": 98
       },
       "id": 23,
       "options": {
@@ -4663,7 +5220,7 @@
         "h": 10,
         "w": 8,
         "x": 16,
-        "y": 91
+        "y": 98
       },
       "id": 21,
       "options": {
@@ -4796,7 +5353,7 @@
         "h": 4,
         "w": 24,
         "x": 0,
-        "y": 101
+        "y": 108
       },
       "id": 9,
       "options": {
@@ -4966,7 +5523,7 @@
         "h": 14,
         "w": 13,
         "x": 0,
-        "y": 105
+        "y": 112
       },
       "id": 34,
       "options": {
@@ -5084,7 +5641,7 @@
         "h": 14,
         "w": 11,
         "x": 13,
-        "y": 105
+        "y": 112
       },
       "id": 70,
       "options": {
@@ -5398,7 +5955,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 119
+        "y": 126
       },
       "id": 79,
       "options": {
@@ -5567,7 +6124,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 126
+        "y": 133
       },
       "id": 77,
       "options": {
@@ -5755,7 +6312,7 @@
         "h": 9,
         "w": 24,
         "x": 0,
-        "y": 135
+        "y": 142
       },
       "id": 78,
       "options": {
@@ -5885,7 +6442,7 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 144
+        "y": 151
       },
       "id": 80,
       "options": {
@@ -5976,7 +6533,7 @@
         "h": 6,
         "w": 3,
         "x": 0,
-        "y": 151
+        "y": 158
       },
       "id": 69,
       "options": {
@@ -6162,7 +6719,7 @@
         "h": 7,
         "w": 21,
         "x": 3,
-        "y": 151
+        "y": 158
       },
       "id": 19,
       "options": {
@@ -6236,7 +6793,7 @@
         "h": 3,
         "w": 3,
         "x": 0,
-        "y": 7
+        "y": 14
       },
       "datasource": {
         "type": "influxdb",
@@ -6311,7 +6868,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 158
+        "y": 165
       },
       "datasource": {
         "type": "influxdb",
@@ -6375,7 +6932,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 158
+        "y": 165
       },
       "datasource": {
         "type": "influxdb",
@@ -6440,7 +6997,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 166
+        "y": 173
       },
       "collapsed": false,
       "panels": [],
@@ -6457,7 +7014,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 167
+        "y": 174
       },
       "datasource": {
         "type": "influxdb",
@@ -6509,7 +7066,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 167
+        "y": 174
       },
       "datasource": {
         "type": "influxdb",
@@ -6571,7 +7128,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 167
+        "y": 174
       },
       "datasource": {
         "type": "influxdb",
@@ -6654,7 +7211,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 175
+        "y": 182
       },
       "datasource": {
         "type": "influxdb",
@@ -6705,7 +7262,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 175
+        "y": 182
       },
       "datasource": {
         "type": "influxdb",
@@ -6747,7 +7304,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 183
+        "y": 190
       },
       "datasource": {
         "type": "influxdb",
@@ -6822,7 +7379,7 @@
         "h": 8,
         "w": 16,
         "x": 8,
-        "y": 183
+        "y": 190
       },
       "datasource": {
         "type": "influxdb",
