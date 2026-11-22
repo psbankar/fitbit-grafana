@@ -422,7 +422,7 @@
             "gradientMode": "none",
             "spanNulls": true,
             "thresholdsStyle": {
-              "mode": "dashed"
+              "mode": "off"
             }
           },
           "color": {

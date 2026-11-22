@@ -161,26 +161,45 @@ def calculate_stress(latest_hrv, baseline_hrv, latest_rhr, baseline_rhr, osas_sc
         "stress_label": stress_label
     }
 
-def calculate_fitness_age(latest_rhr, avg_steps_7d, measured_vo2max=None):
+def calculate_fitness_age(curr_date, latest_rhr, baseline_rhr, avg_steps_7d, measured_vo2max=None):
     """
     Biological Fitness Age & Functional VO2 Max:
-    1. ACSM / Jackson non-exercise model
+    1. Dynamic Chronological Age: date.year - 1997
     2. NTNU / CERG scale: age = 160.7 - 2.513 * VO2max
+    3. ACSM / Lifestyle Functional Biological Age:
+       Modulates the measured/cardiorespiratory baseline with weekly activity volume
+       and resting heart rate recovery relative to personal baseline, compared to
+       age-normative expected VO2 max.
     """
+    chrono_age = float(curr_date.year - 1997)
+    expected_vo2 = 44.0 - max(0.0, (chrono_age - 27.0) * 0.5)
+
+    base_vo2 = measured_vo2max if (measured_vo2max is not None and measured_vo2max > 20.0) else 49.1
+
+    # Physical activity modulation: 10,000 steps is +1.5 mL, 2,000 steps is -1.5 mL
     activity_factor = clamp(avg_steps_7d / 10000.0, 0.0, 1.0)
-    functional_vo2max = 34.0 + (activity_factor * 3.0) - max(0.0, (latest_rhr - 68.0) * 0.3)
-    functional_vo2max = round(clamp(functional_vo2max, 30.0, 60.0), 1)
+    activity_mod = (activity_factor - 0.5) * 3.0
 
-    bio_age = round(clamp(29.0 + (44.0 - functional_vo2max) * 2.2, 20.0, 65.0), 1)
+    # Hemodynamic modulation: resting HR vs baseline
+    b_rhr = baseline_rhr if (baseline_rhr is not None and baseline_rhr > 40.0) else 71.4
+    rhr_diff = latest_rhr - b_rhr
+    rhr_mod = clamp(rhr_diff / 4.0, -2.0, 2.0) * 1.5
 
-    eff_vo2max = measured_vo2max if (measured_vo2max is not None and measured_vo2max > 20.0) else functional_vo2max
-    cerg_fitness_age = round(clamp(160.7 - (2.513 * eff_vo2max), 18.0, 70.0), 1)
+    functional_vo2max = round(clamp(base_vo2 + activity_mod - rhr_mod, 25.0, 60.0), 1)
+
+    # Biological Age: deviation from age-normative fitness (scaled by 1.25)
+    vo2_gap = expected_vo2 - functional_vo2max
+    bio_age = round(clamp(chrono_age + (vo2_gap * 1.25), 18.0, 60.0), 1)
+
+    # NTNU / CERG Fitness Age (pure cardiopulmonary map)
+    cerg_fitness_age = round(clamp(160.7 - (2.513 * base_vo2), 18.0, 70.0), 1)
 
     return {
+        "chrono_age": chrono_age,
         "functional_vo2max": functional_vo2max,
         "bio_age": bio_age,
         "cerg_fitness_age": cerg_fitness_age,
-        "effective_vo2max": eff_vo2max
+        "effective_vo2max": base_vo2
     }
 
 # =============================================================================
@@ -305,7 +324,7 @@ def compute_scores_for_timeline(sleep_dict, hrv_dict, rhr_dict, steps_dict, vo2_
     Iterates over target_dates, computes daily scores, and generates InfluxDB line protocol records.
     """
     points = []
-    last_known_vo2 = 43.2  # default baseline
+    last_known_vo2 = 49.1  # Earliest recorded watch baseline (Aug 2024)
 
     # Sort all dates to track chronological VO2Max updates
     all_dates_sorted = sorted(set(list(sleep_dict.keys()) + list(hrv_dict.keys()) + list(rhr_dict.keys())))
@@ -363,7 +382,7 @@ def compute_scores_for_timeline(sleep_dict, hrv_dict, rhr_dict, steps_dict, vo2_
         # Calculations
         readiness_res = calculate_readiness(latest_hrv, baseline_hrv, hrv_std, latest_rhr, baseline_rhr, osas_score)
         stress_res = calculate_stress(latest_hrv, baseline_hrv, latest_rhr, baseline_rhr, osas_score)
-        fitness_res = calculate_fitness_age(latest_rhr, avg_steps_7d, last_known_vo2)
+        fitness_res = calculate_fitness_age(curr_date, latest_rhr, baseline_rhr, avg_steps_7d, last_known_vo2)
 
         # Skip writing if no actual biometric data exists at all for this day
         if date_str not in sleep_dict and date_str not in hrv_dict and date_str not in rhr_dict:
@@ -380,7 +399,7 @@ def compute_scores_for_timeline(sleep_dict, hrv_dict, rhr_dict, steps_dict, vo2_
             f"bio_age={fitness_res['bio_age']}",
             f"cerg_fitness_age={fitness_res['cerg_fitness_age']}",
             f"target_age=22.0",
-            f"chrono_age=29.0",
+            f"chrono_age={fitness_res['chrono_age']}",
             f"functional_vo2max={fitness_res['functional_vo2max']}",
             f"effective_vo2max={fitness_res['effective_vo2max']}",
             f"hrv_score={readiness_res['hrv_score']}",
