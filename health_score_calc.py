@@ -202,6 +202,43 @@ def calculate_fitness_age(curr_date, latest_rhr, baseline_rhr, avg_steps_7d, mea
         "effective_vo2max": base_vo2
     }
 
+def calculate_autonomic_age(latest_hrv, baseline_hrv, latest_rhr, baseline_rhr, chrono_age):
+    """
+    Standard Autonomic / Vagal Biological Age (Umetani / Kubios Normative Model):
+    Evaluates parasympathetic autonomic health via nocturnal ln(RMSSD) and resting heart rate.
+    Expected ln(RMSSD) for healthy men declines linearly with age:
+      ln(RMSSD_expected) = 4.25 - 0.018 * chrono_age
+    Deviations reflect parasympathetic vitality (younger autonomic age) vs vagal withdrawal (older age).
+    """
+    expected_ln_rmssd = 4.25 - (0.018 * chrono_age)
+    actual_ln_rmssd = math.log(max(5.0, latest_hrv))
+    # Each 0.1 log unit deviation ~ 2.0 years of autonomic age difference
+    hrv_delta_years = (expected_ln_rmssd - actual_ln_rmssd) * 20.0
+
+    b_rhr = baseline_rhr if (baseline_rhr is not None and baseline_rhr > 40.0) else 71.4
+    rhr_delta_years = clamp((latest_rhr - b_rhr) / 4.0, -2.0, 2.0) * 2.0
+
+    autonomic_age = round(clamp(chrono_age + hrv_delta_years + rhr_delta_years, 18.0, 60.0), 1)
+    return autonomic_age
+
+def get_interpolated_vo2(curr_date, vo2_dict):
+    """
+    Interpolates baseline VO2Max across the 2-year measurement blindspot (Oct 2024 to Sep 2026)
+    between the two actual outdoor GPS run tests (49.1 in Oct 2024 and 43.2 in Sep 2026).
+    """
+    d_oct_2024 = datetime.strptime("2024-10-10", "%Y-%m-%d").date()
+    d_sep_2026 = datetime.strptime("2026-09-07", "%Y-%m-%d").date()
+
+    if curr_date <= d_oct_2024:
+        return 49.1
+    elif curr_date >= d_sep_2026:
+        curr_str = curr_date.strftime("%Y-%m-%d")
+        matching = [d for d in vo2_dict if d <= curr_str]
+        return vo2_dict[max(matching)] if matching else 43.2
+    else:
+        frac = (curr_date - d_oct_2024).days / (d_sep_2026 - d_oct_2024).days
+        return round(49.1 + frac * (43.2 - 49.1), 2)
+
 # =============================================================================
 # Pipeline & Batch Processing
 # =============================================================================
@@ -335,10 +372,8 @@ def compute_scores_for_timeline(sleep_dict, hrv_dict, rhr_dict, steps_dict, vo2_
         except ValueError:
             continue
 
-        # Check for any VO2Max recorded on or before this date
-        matching_vo2_dates = [d for d in vo2_dict if d <= date_str]
-        if matching_vo2_dates:
-            last_known_vo2 = vo2_dict[max(matching_vo2_dates)]
+        # Interpolate baseline VO2Max across the 2-year run gap
+        base_vo2 = get_interpolated_vo2(curr_date, vo2_dict)
 
         # 1. Sleep Score (OSAS)
         sleep_entry = sleep_dict.get(date_str)
@@ -382,7 +417,8 @@ def compute_scores_for_timeline(sleep_dict, hrv_dict, rhr_dict, steps_dict, vo2_
         # Calculations
         readiness_res = calculate_readiness(latest_hrv, baseline_hrv, hrv_std, latest_rhr, baseline_rhr, osas_score)
         stress_res = calculate_stress(latest_hrv, baseline_hrv, latest_rhr, baseline_rhr, osas_score)
-        fitness_res = calculate_fitness_age(curr_date, latest_rhr, baseline_rhr, avg_steps_7d, last_known_vo2)
+        fitness_res = calculate_fitness_age(curr_date, latest_rhr, baseline_rhr, avg_steps_7d, base_vo2)
+        autonomic_age = calculate_autonomic_age(latest_hrv, baseline_hrv, latest_rhr, baseline_rhr, fitness_res['chrono_age'])
 
         # Skip writing if no actual biometric data exists at all for this day
         if date_str not in sleep_dict and date_str not in hrv_dict and date_str not in rhr_dict:
@@ -398,6 +434,7 @@ def compute_scores_for_timeline(sleep_dict, hrv_dict, rhr_dict, steps_dict, vo2_
             f"stress_score={stress_res['stress_score']}",
             f"bio_age={fitness_res['bio_age']}",
             f"cerg_fitness_age={fitness_res['cerg_fitness_age']}",
+            f"autonomic_age={autonomic_age}",
             f"target_age=22.0",
             f"chrono_age={fitness_res['chrono_age']}",
             f"functional_vo2max={fitness_res['functional_vo2max']}",

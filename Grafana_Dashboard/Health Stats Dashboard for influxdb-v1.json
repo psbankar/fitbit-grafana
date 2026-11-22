@@ -399,9 +399,9 @@
     },
     {
       "id": 104,
-      "title": "Fitness Age Trajectory & Reversal Goal",
+      "title": "Biological & Cardiorespiratory Age Trajectory",
       "type": "timeseries",
-      "description": "Longitudinal tracking of NTNU/CERG Fitness Age & ACSM Functional Age against Chronological Baseline (29y) and Target Athletic Goal (22y).",
+      "description": "Tracks NTNU/CERG Cardiorespiratory Fitness Age (VO2max), ACSM Functional Age (Activity & Vitals), and Autonomic Vagal Age (Nocturnal HRV & RHR) against Chronological Age and Target Goal (22y).",
       "gridPos": {
         "h": 6,
         "w": 7,
@@ -462,7 +462,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "CERG Fitness Age"
+                "value": "CERG Cardiorespiratory Age (VO2Max)"
               },
               {
                 "id": "color",
@@ -477,7 +477,7 @@
               },
               {
                 "id": "custom.fillOpacity",
-                "value": 10
+                "value": 8
               }
             ]
           },
@@ -489,7 +489,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "ACSM Functional Age"
+                "value": "ACSM Functional Age (Activity & Vitals)"
               },
               {
                 "id": "color",
@@ -511,12 +511,39 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "Daily_Scores.autonomic_age"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Autonomic Vagal Age (Nocturnal HRV & RHR)"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#5794F2",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 1.5
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "Daily_Scores.chrono_age"
             },
             "properties": [
               {
                 "id": "displayName",
-                "value": "Chronological Age (29y)"
+                "value": "Chronological Age"
               },
               {
                 "id": "color",
@@ -552,7 +579,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Target Goal (22y)"
+                "value": "Target Athletic Goal (22y)"
               },
               {
                 "id": "color",
@@ -600,7 +627,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_HEALTH_STATS}"
+            "uid": ""
           },
           "groupBy": [],
           "measurement": "Daily_Scores",
@@ -623,7 +650,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_HEALTH_STATS}"
+            "uid": ""
           },
           "groupBy": [],
           "measurement": "Daily_Scores",
@@ -646,13 +673,36 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_HEALTH_STATS}"
+            "uid": ""
           },
           "groupBy": [],
           "measurement": "Daily_Scores",
           "orderByTime": "ASC",
           "policy": "default",
           "refId": "C",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "autonomic_age"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": ""
+          },
+          "groupBy": [],
+          "measurement": "Daily_Scores",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
           "resultFormat": "time_series",
           "select": [
             [
@@ -669,13 +719,13 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_HEALTH_STATS}"
+            "uid": ""
           },
           "groupBy": [],
           "measurement": "Daily_Scores",
           "orderByTime": "ASC",
           "policy": "default",
-          "refId": "D",
+          "refId": "E",
           "resultFormat": "time_series",
           "select": [
             [
