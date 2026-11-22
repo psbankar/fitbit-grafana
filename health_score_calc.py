@@ -41,9 +41,9 @@ def get_influx_urls():
 
 def query_influx(q):
     query_url, _ = get_influx_urls()
-    url = f"{query_url}&" + urllib.parse.urlencode({"q": q})
+    data = urllib.parse.urlencode({"q": q}).encode("utf-8")
     try:
-        req = urllib.request.Request(url)
+        req = urllib.request.Request(query_url, data=data, method="POST")
         with urllib.request.urlopen(req, timeout=30) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             return data.get("results", [])
@@ -379,6 +379,8 @@ def compute_scores_for_timeline(sleep_dict, hrv_dict, rhr_dict, steps_dict, vo2_
             f"stress_score={stress_res['stress_score']}",
             f"bio_age={fitness_res['bio_age']}",
             f"cerg_fitness_age={fitness_res['cerg_fitness_age']}",
+            f"target_age=22.0",
+            f"chrono_age=29.0",
             f"functional_vo2max={fitness_res['functional_vo2max']}",
             f"effective_vo2max={fitness_res['effective_vo2max']}",
             f"hrv_score={readiness_res['hrv_score']}",

@@ -144,7 +144,7 @@
       "description": "Composite readiness computed from overnight HRV (40%), resting HR (30%), and sleep architecture (30%) relative to 30-day baseline.",
       "gridPos": {
         "h": 6,
-        "w": 4,
+        "w": 3,
         "x": 0,
         "y": 1
       },
@@ -232,8 +232,8 @@
       "description": "Objective Sleep Architecture Score (OSAS) based on total sleep duration (45%), deep+REM restorative ratio (35%), and WASO continuity (20%).",
       "gridPos": {
         "h": 6,
-        "w": 4,
-        "x": 4,
+        "w": 3,
+        "x": 3,
         "y": 1
       },
       "datasource": {
@@ -316,8 +316,8 @@
       "description": "Autonomic stress index quantifying sympathetic tone (HRV suppression), hemodynamic load (RHR elevation), and sleep debt.",
       "gridPos": {
         "h": 6,
-        "w": 4,
-        "x": 8,
+        "w": 3,
+        "x": 6,
         "y": 1
       },
       "datasource": {
@@ -399,13 +399,13 @@
     },
     {
       "id": 104,
-      "title": "Biological Fitness Age",
-      "type": "stat",
-      "description": "Biological and functional age models: ACSM / Jackson non-exercise model & NTNU / CERG cardiopulmonary scale.",
+      "title": "Fitness Age Trajectory & Reversal Goal",
+      "type": "timeseries",
+      "description": "Longitudinal tracking of NTNU/CERG Fitness Age & ACSM Functional Age against Chronological Baseline (29y) and Target Athletic Goal (22y).",
       "gridPos": {
         "h": 6,
-        "w": 4,
-        "x": 12,
+        "w": 7,
+        "x": 9,
         "y": 1
       },
       "datasource": {
@@ -414,44 +414,187 @@
       },
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 6,
+            "gradientMode": "none",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
           },
-          "mappings": [],
+          "color": {
+            "mode": "palette-classic"
+          },
+          "min": 15,
+          "max": 60,
+          "unit": "none",
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#73BF69",
                 "value": null
               },
               {
-                "color": "yellow",
-                "value": 30
+                "color": "#73BF69",
+                "value": 22
               },
               {
-                "color": "red",
+                "color": "#FADE2A",
+                "value": 29
+              },
+              {
+                "color": "#F2495C",
                 "value": 45
               }
             ]
-          },
-          "unit": "years"
+          }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Daily_Scores.cerg_fitness_age"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "CERG Fitness Age"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#F2495C",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 2.5
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 10
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Daily_Scores.bio_age"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "ACSM Functional Age"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#FF9830",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 2
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Daily_Scores.chrono_age"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Chronological Age (29y)"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#FADE2A",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    8,
+                    6
+                  ]
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 2
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Daily_Scores.target_age"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Target Goal (22y)"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#73BF69",
+                  "mode": "fixed"
+                }
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [
+                    8,
+                    6
+                  ]
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 2
+              },
+              {
+                "id": "custom.fillOpacity",
+                "value": 0
+              }
+            ]
+          }
+        ]
       },
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
+        "legend": {
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "",
-          "values": false
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "textMode": "auto"
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
       },
       "targets": [
         {
@@ -469,7 +612,7 @@
             [
               {
                 "params": [
-                  "bio_age"
+                  "cerg_fitness_age"
                 ],
                 "type": "field"
               }
@@ -492,7 +635,53 @@
             [
               {
                 "params": [
-                  "cerg_fitness_age"
+                  "bio_age"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "groupBy": [],
+          "measurement": "Daily_Scores",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "C",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "chrono_age"
+                ],
+                "type": "field"
+              }
+            ]
+          ],
+          "tags": []
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "${DS_HEALTH_STATS}"
+          },
+          "groupBy": [],
+          "measurement": "Daily_Scores",
+          "orderByTime": "ASC",
+          "policy": "default",
+          "refId": "D",
+          "resultFormat": "time_series",
+          "select": [
+            [
+              {
+                "params": [
+                  "target_age"
                 ],
                 "type": "field"
               }
